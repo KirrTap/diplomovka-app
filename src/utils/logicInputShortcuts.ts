@@ -1,13 +1,11 @@
 export const LOGIC_SYMBOL_REPLACEMENTS = [
-    { shortcut: /\\rightarrow/g, symbol: '=>' },
-    { shortcut: /\\implies/g, symbol: '=>' },
-    { shortcut: /\\to/g, symbol: '=>' },
-    { shortcut: /=>/g, symbol: '=>' },
-    { shortcut: /\\leftarrow/g, symbol: '<=' },
-    { shortcut: /\\and|\\wedge/g, symbol: '&&' },
-    { shortcut: /\\or|\\vee/g, symbol: '||' },
-    { shortcut: /\\not|\\neg|~/g, symbol: '!' },
-    // ...pridaj ďalšie podľa potreby
+    { shortcut: /\\and|\\land|\\&/g, symbol: '∧' },
+    { shortcut: /\\lor|\\or|\\\|/g, symbol: '∨' },
+    { shortcut: /\\implies|\\rightarrow|\\to/g, symbol: '=>' },
+    { shortcut: /\\neg|\\not|\\!/g, symbol: '¬' },
+    { shortcut: /\\vdash/g, symbol: '⊢' },
+    { shortcut: /\\forall/g, symbol: '∀' },
+    { shortcut: /\\exists/g, symbol: '∃' },
 ];
 
 export function replaceShortcutsRealtime(str: string) {
