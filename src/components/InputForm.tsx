@@ -3,7 +3,7 @@ import { useLanguage } from '../translations/LanguageContext'
 import { ProcessButton } from './ProcessButton'
 import { SymbolButton } from './SymbolButton'
 import { replaceShortcutsRealtime } from '../utils/logicInputShortcuts'
-import { logicTokenize } from '../utils/tokenizer'
+import { logicTokenize, decideLogicType } from '../utils/tokenizer'
 import { ErrorMessage } from './ErrorMessage'
 
 export const InputForm = () => {
@@ -49,6 +49,8 @@ export const InputForm = () => {
         } else {
             setError(null);
         }
+        console.log('Tokens', logicTokenize(inputValue))
+        console.log('Type', decideLogicType(logicTokenize(inputValue)))
     }
 
     return (

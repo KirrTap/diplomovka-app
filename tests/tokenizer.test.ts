@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { logicTokenize } from '../src/utils/tokenizer'
+import { logicTokenize, decideLogicType } from '../src/utils/tokenizer'
 
 describe('logicTokenize', () => {
     it('tokenizes simple formula', () => {
@@ -88,3 +88,46 @@ describe('logicTokenize', () => {
     ])
 })
 })
+
+describe('decideLogicType', () => {
+    it('should detect sekvent', () => {
+        const tokens = logicTokenize('A⊢B');
+        expect(decideLogicType(tokens)).toBe('sekvent');
+    });
+
+    it('detect sekvent', () => {
+        const tokens = logicTokenize('P(x) ⊢ Q(y)');
+        expect(decideLogicType(tokens)).toBe('sekvent');
+    });
+
+    it('detect prolog (query)', () => {
+        const tokens = logicTokenize('? P(a, b)');
+        expect(decideLogicType(tokens)).toBe('prolog');
+    });
+
+    it('detect prolog (rule)', () => {
+        const tokens = logicTokenize('ancestor(X, Y) :- parent(X, Y)');
+        expect(decideLogicType(tokens)).toBe('prolog');
+    });
+
+    it('detect prolog (fact)', () => {
+        const tokens = logicTokenize('parent(john, mary)!');
+        expect(decideLogicType(tokens)).toBe('prolog');
+    });
+
+    it('detect standard', () => {
+        const tokens = logicTokenize('A ∧ B ∨ C => D');
+        expect(decideLogicType(tokens)).toBe('standard');
+    });
+
+    it('prolog syntax for full input', () => {
+        const input = `parent(john, mary).
+            loves(mary, pizza).
+            ancestor(X, Y) :- parent(X, Y).
+            ancestor(X, Y) :- parent(X, Z), ancestor(Z, Y).
+            ?- ancestor(john, mary).
+            ?- loves(mary, pizza).`;
+        const tokens = logicTokenize(input);
+        expect(decideLogicType(tokens)).toBe('prolog');
+    });
+});

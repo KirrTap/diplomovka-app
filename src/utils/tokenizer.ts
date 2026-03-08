@@ -11,8 +11,12 @@ export type LogicToken =
   | { type: 'lparen' }
   | { type: 'rparen' }
   | { type: 'comma' }
+  | { type: 'minus' }
   | { type: 'identifier'; value: string }
   | { type: 'unknown'; value: string; position: number }
+  | { type: 'query' }
+  | { type: 'rule' }
+  | { type: 'fact' }
   | { type: 'eof' };
 
 export function logicTokenize(rawInput: string): LogicToken[] {
@@ -38,11 +42,20 @@ export function logicTokenize(rawInput: string): LogicToken[] {
       case '(': tokens.push({ type: 'lparen' }); i++; continue;
       case ')': tokens.push({ type: 'rparen' }); i++; continue;
       case ',': tokens.push({ type: 'comma' }); i++; continue;
+      case '-': tokens.push({ type: 'minus' }); i++; continue;
+      case '?': tokens.push({ type: 'query' }); i++; continue;
+      case '.': tokens.push({ type: 'fact' }); i++; continue;
     }
     // Multi-char tokens
     // =>
     if (c === '=' && input[i+1] === '>') {
       tokens.push({ type: 'implies' });
+      i += 2;
+      continue;
+    }
+    // :- for rules
+    if (c === ':' && input[i+1] === '-') {
+      tokens.push({ type: 'rule' });
       i += 2;
       continue;
     }
@@ -60,3 +73,18 @@ export function logicTokenize(rawInput: string): LogicToken[] {
   tokens.push({ type: 'eof' });
   return tokens;
 }
+  export function decideLogicType(tokens: LogicToken[]): 'sekvent' | 'prolog' | 'standard' {
+    let hasSequent = false;
+    let hasProlog = false;
+    for (const token of tokens) {
+      if (token.type === '⊢') {
+        hasSequent = true;
+      }
+      if (token.type === 'query' || token.type === 'rule' || token.type === 'fact') {
+        hasProlog = true;
+      }
+    }
+    if (hasSequent) return 'sekvent';
+    if (hasProlog) return 'prolog';
+    return 'standard';
+  }
