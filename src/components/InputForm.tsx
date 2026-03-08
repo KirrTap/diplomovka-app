@@ -3,8 +3,10 @@ import { useLanguage } from '../translations/LanguageContext'
 import { ProcessButton } from './ProcessButton'
 import { SymbolButton } from './SymbolButton'
 import { replaceShortcutsRealtime } from '../utils/logicInputShortcuts'
+import { logicTokenize } from '../utils/tokenizer'
 
 export const InputForm = () => {
+  
     const { t } = useLanguage()
     const [inputValue, setInputValue] = useState('')
     const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -25,6 +27,11 @@ export const InputForm = () => {
 
     const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInputValue(replaceShortcutsRealtime(e.target.value))
+    }
+
+    const handleProcess = () => {
+        const tokens = logicTokenize(inputValue)
+        console.log('TOKENS:', tokens)
     }
 
     return (
@@ -53,7 +60,7 @@ export const InputForm = () => {
                         <SymbolButton symbol=")" onClick={handleInsertSymbol} />
                     </div>
                     <div>
-                        <ProcessButton/>
+                        <ProcessButton onClick={handleProcess} />
                     </div>
                 </div>
             </div>
