@@ -14,8 +14,21 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [lang, setLang] = useState<LanguageKey>('sk')
 
   const t = (key: string) => {
-    const translations = languages[lang].translations as Record<string, string>
-    return translations[key] ?? key
+    const translations = languages[lang].translations as Record<string, unknown>
+    if (key.includes('.')) {
+      let obj: unknown = translations
+      for (const part of key.split('.')) {
+        if (obj && typeof obj === 'object' && part in obj) {
+          obj = (obj as Record<string, unknown>)[part]
+        } else {
+          obj = undefined
+          break
+        }
+      }
+      const value = obj
+      return typeof value === 'string' ? value : key
+    }
+    return typeof translations[key] === 'string' ? translations[key] : key
   }
 
   return (

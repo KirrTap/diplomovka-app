@@ -1,4 +1,7 @@
 {
-"title":"ProverSLD",
-"enter_formula": "Enter formula:"
+  "title": "ProverSLD",
+  "enter_formula": "Enter formula:",
+  "errors": {
+    "error_unknown_character": "Unknown character '{value}' at position {position}"
+  }
 }

@@ -1,4 +1,7 @@
 {
-"title":"ProverSLD",
-"enter_formula": "Zadajte formulu:"
+  "title": "ProverSLD",
+  "enter_formula": "Zadajte formulu:",
+  "errors": {
+    "error_unknown_character": "Neznámy znak '{value}' na pozícii {position}"
+  }
 }
