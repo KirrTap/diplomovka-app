@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useLanguage } from '../translations/LanguageContext'
-import { languages } from '../translations/translations'
-import type { LanguageKey } from '../translations/translations'
+import { useLanguage } from '../../translations/LanguageContext'
+import { languages } from '../../translations/translations'
+import type { LanguageKey } from '../../translations/translations'
 import ReactCountryFlag from 'react-country-flag'
 
 export const LanguageDropdown = () => {

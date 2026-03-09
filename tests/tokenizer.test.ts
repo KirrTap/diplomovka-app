@@ -50,7 +50,7 @@ describe('logicTokenize', () => {
     it('tokenizes formula with unknown characters', () => {
         expect(logicTokenize('A $ B')).toEqual([
             { type: 'identifier', value: 'A' },
-            { type: 'unknown', value: '$', position: 2 },
+            { type: 'unknown', value: '$' },
             { type: 'identifier', value: 'B' },
             { type: 'eof' }
         ])
@@ -65,7 +65,7 @@ describe('logicTokenize', () => {
             { type: 'exists' },
             { type: 'identifier', value: 'y' },
             { type: 'rparen' },
-            { type: 'unknown', value: '$', position: 12 },
+            { type: 'unknown', value: '$' },
             { type: 'identifier', value: 'Q' },
             { type: 'lparen' },
             { type: 'identifier', value: 'y' },
@@ -76,9 +76,9 @@ describe('logicTokenize', () => {
 
     it(' input with only unknown characters', () => {
     expect(logicTokenize('#&@')).toEqual([
-        { type: 'unknown', value: '#', position: 0 },
-        { type: 'unknown', value: '&', position: 1 },
-        { type: 'unknown', value: '@', position: 2 },
+        { type: 'unknown', value: '#' },
+        { type: 'unknown', value: '&' },
+        { type: 'unknown', value: '@' },
         { type: 'eof' }
     ])
 })
@@ -111,7 +111,7 @@ describe('decideLogicType', () => {
     });
 
     it('detect prolog (fact)', () => {
-        const tokens = logicTokenize('parent(john, mary)!');
+        const tokens = logicTokenize('parent(john, mary).');
         expect(decideLogicType(tokens)).toBe('prolog');
     });
 

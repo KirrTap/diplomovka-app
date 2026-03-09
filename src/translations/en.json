@@ -1,7 +1,9 @@
 {
   "title": "ProverSLD",
   "enter_formula": "Enter formula:",
+  "search_strategy": "Search strategy:",
+  "process_formula": "Process formula",
   "errors": {
-    "error_unknown_character": "Unknown character '{value}' at position {position}"
+    "error_unknown_character": "Unknown character '{value}'"
   }
 }

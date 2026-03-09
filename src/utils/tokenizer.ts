@@ -13,7 +13,7 @@ export type LogicToken =
   | { type: 'comma' }
   | { type: 'minus' }
   | { type: 'identifier'; value: string }
-  | { type: 'unknown'; value: string; position: number }
+  | { type: 'unknown'; value: string }
   | { type: 'query' }
   | { type: 'rule' }
   | { type: 'fact' }
@@ -67,7 +67,7 @@ export function logicTokenize(rawInput: string): LogicToken[] {
       continue;
     }
     // unknown
-    tokens.push({ type: 'unknown', value: c, position: i });
+    tokens.push({ type: 'unknown', value: c });
     i++;
   }
   tokens.push({ type: 'eof' });

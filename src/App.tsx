@@ -1,8 +1,8 @@
 import './index.css'
-import { LanguageDropdown } from './components/LanguageDropdown.tsx'
-import { Logo } from './components/Logo'
+import { LanguageDropdown } from './components/TopBar/LanguageDropdown.tsx'
+import { Logo } from './components/TopBar/Logo.tsx'
 import { useLanguage } from './translations/LanguageContext'
-import { InputForm} from './components/InputForm'
+import { InputForm} from './components/InputBox/InputForm.tsx'
 
 function Content() {
 const { t } = useLanguage()

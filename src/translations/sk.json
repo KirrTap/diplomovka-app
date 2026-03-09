@@ -1,7 +1,9 @@
 {
   "title": "ProverSLD",
   "enter_formula": "Zadajte formulu:",
+  "search_strategy": "Stratégia prehľadávania:",
+  "process_formula": "Spracovať formulu",
   "errors": {
-    "error_unknown_character": "Neznámy znak '{value}' na pozícii {position}"
+    "error_unknown_character": "Neznámy znak '{value}'"
   }
 }

@@ -1,10 +1,13 @@
 import { useRef, useState } from 'react'
-import { useLanguage } from '../translations/LanguageContext'
+import { useLanguage } from '../../translations/LanguageContext'
 import { ProcessButton } from './ProcessButton'
 import { SymbolButton } from './SymbolButton'
-import { replaceShortcutsRealtime } from '../utils/logicInputShortcuts'
-import { logicTokenize, decideLogicType } from '../utils/tokenizer'
+import { SearchStrategySwitcher } from './SearchStrategySwitcher'
+import { replaceShortcutsRealtime } from '../../utils/logicInputShortcuts'
+import { logicTokenize, decideLogicType } from '../../utils/tokenizer'
 import { ErrorMessage } from './ErrorMessage'
+
+export type SearchStrategy = 'bfs' | 'dfs'
 
 export const InputForm = () => {
   
@@ -12,6 +15,7 @@ export const InputForm = () => {
     const [inputValue, setInputValue] = useState('')
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const [error, setError] = useState<{ key: string; params: Record<string, string> } | null>(null);
+    const [strategy, setStrategy] = useState<SearchStrategy>('bfs')
 
 
     const handleInsertSymbol = (symbol: string) => {
@@ -36,14 +40,13 @@ export const InputForm = () => {
     const handleProcess = () => {
         const tokens = logicTokenize(inputValue)
         const unknownToken = tokens.find(
-            (t): t is { type: 'unknown'; value: string; position: number } => t.type === 'unknown'
+            (t): t is { type: 'unknown'; value: string } => t.type === 'unknown'
         );
         if (unknownToken) {
             setError({
                 key: 'errors.error_unknown_character',
                 params: {
-                    value: unknownToken.value,
-                    position: String(unknownToken.position)
+                    value: unknownToken.value
                 }
             });
         } else {
@@ -51,6 +54,7 @@ export const InputForm = () => {
         }
         console.log('Tokens', logicTokenize(inputValue))
         console.log('Type', decideLogicType(logicTokenize(inputValue)))
+        console.log('Strategy', strategy)
     }
 
     return (
@@ -71,11 +75,10 @@ export const InputForm = () => {
                         message={
                         t(error.key)
                             .replace('{value}', error.params.value)
-                            .replace('{position}', error.params.position)
                         }
                     />
                 )}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-wrap gap-4 items-end justify-between mb-4">
                     <div className="flex gap-2 flex-wrap">
                         <SymbolButton symbol="∧" onClick={handleInsertSymbol} />
                         <SymbolButton symbol="∨" onClick={handleInsertSymbol} />
@@ -87,7 +90,8 @@ export const InputForm = () => {
                         <SymbolButton symbol="(" onClick={handleInsertSymbol} />
                         <SymbolButton symbol=")" onClick={handleInsertSymbol} />
                     </div>
-                    <div>
+                    <div className="flex items-center gap-8 flex-wrap">
+                        <SearchStrategySwitcher strategy={strategy} setStrategy={setStrategy} />
                         <ProcessButton onClick={handleProcess} />
                     </div>
                 </div>
