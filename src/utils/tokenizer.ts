@@ -62,7 +62,6 @@ export function logicTokenize(rawInput: string): LogicToken[] {
       i += 2;
       continue;
     }
-    // identifier rozlišuje: lower_id (variable/funkcia), upper_id (predikát/konštanta)
     if (c.match(/[a-zA-Z_]/)) {
       let start = i;
       while (i < input.length && input[i].match(/[a-zA-Z0-9_]/)) i++;
