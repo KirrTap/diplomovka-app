@@ -4,9 +4,9 @@ import { logicTokenize, decideLogicType } from '../src/utils/tokenizer'
 describe('logicTokenize', () => {
     it('tokenizes simple formula', () => {
     expect(logicTokenize('A ∧ B')).toEqual([
-        { type: 'identifier', value: 'A' },
+        { type: 'upper_id', value: 'A' },
         { type: 'and' },
-        { type: 'identifier', value: 'B' },
+        { type: 'upper_id', value: 'B' },
         { type: 'eof' }
     ])
     })
@@ -15,21 +15,21 @@ describe('logicTokenize', () => {
         expect(logicTokenize('(∀x) (P(x) => (∃y) Q(y))')).toEqual([
             { type: 'lparen' },
             { type: 'forall' },
-            { type: 'identifier', value: 'x' },
+            { type: 'lower_id', value: 'x' },
             { type: 'rparen' },
             { type: 'lparen' },
-            { type: 'identifier', value: 'P' },
+            { type: 'upper_id', value: 'P' },
             { type: 'lparen' },
-            { type: 'identifier', value: 'x' },
+            { type: 'lower_id', value: 'x' },
             { type: 'rparen' },
             { type: 'implies' },
             { type: 'lparen' },
             { type: 'exists' },
-            { type: 'identifier', value: 'y' },
+            { type: 'lower_id', value: 'y' },
             { type: 'rparen' },
-            { type: 'identifier', value: 'Q' },
+            { type: 'upper_id', value: 'Q' },
             { type: 'lparen' },
-            { type: 'identifier', value: 'y' },
+            { type: 'lower_id', value: 'y' },
             { type: 'rparen' },
             { type: 'rparen' },
             { type: 'eof' }
@@ -38,37 +38,37 @@ describe('logicTokenize', () => {
 
     it('tokenizes formula with comma', () => {
     expect(logicTokenize('P(x,y)')).toEqual([
-        { type: 'identifier', value: 'P' },
+        { type: 'upper_id', value: 'P' },
         { type: 'lparen' },
-        { type: 'identifier', value: 'x' },
+        { type: 'lower_id', value: 'x' },
         { type: 'comma' },
-        { type: 'identifier', value: 'y' },
+        { type: 'lower_id', value: 'y' },
         { type: 'rparen' },
         { type: 'eof' }
     ])
 })
     it('tokenizes formula with unknown characters', () => {
         expect(logicTokenize('A $ B')).toEqual([
-            { type: 'identifier', value: 'A' },
+            { type: 'upper_id', value: 'A' },
             { type: 'unknown', value: '$' },
-            { type: 'identifier', value: 'B' },
+            { type: 'upper_id', value: 'B' },
             { type: 'eof' }
         ])
 
         expect(logicTokenize('P(x) => (∃y)$Q(y)')).toEqual([
-            { type: 'identifier', value: 'P' },
+            { type: 'upper_id', value: 'P' },
             { type: 'lparen' },
-            { type: 'identifier', value: 'x' },
+            { type: 'lower_id', value: 'x' },
             { type: 'rparen' },
             { type: 'implies' },
             { type: 'lparen' },
             { type: 'exists' },
-            { type: 'identifier', value: 'y' },
+            { type: 'lower_id', value: 'y' },
             { type: 'rparen' },
             { type: 'unknown', value: '$' },
-            { type: 'identifier', value: 'Q' },
+            { type: 'upper_id', value: 'Q' },
             { type: 'lparen' },
-            { type: 'identifier', value: 'y' },
+            { type: 'lower_id', value: 'y' },
             { type: 'rparen' },
             { type: 'eof' }
         ])
@@ -82,6 +82,39 @@ describe('logicTokenize', () => {
         { type: 'eof' }
     ])
 })
+
+    it('tokenizes prolog variables and predicates', () => {
+    expect(logicTokenize('?- Predicate(X, y)')).toEqual([
+        { type: 'query' },
+        { type: 'upper_id', value: 'Predicate' },
+        { type: 'lparen' },
+        { type: 'upper_id', value: 'X' },
+        { type: 'comma' },
+        { type: 'lower_id', value: 'y' },
+        { type: 'rparen' },
+        { type: 'eof' }
+    ])
+})
+
+    it('detect rule', () => {
+    expect(logicTokenize('ancestor(X, Y) :- parent(X, Y)')).toEqual([
+        { type: 'lower_id', value: 'ancestor' },
+        { type: 'lparen' },
+        { type: 'upper_id', value: 'X' },
+        { type: 'comma' },
+        { type: 'upper_id', value: 'Y' },
+        { type: 'rparen' },
+        { type: 'rule' },
+        { type: 'lower_id', value: 'parent' },
+        { type: 'lparen' },
+        { type: 'upper_id', value: 'X' },
+        { type: 'comma' },
+        { type: 'upper_id', value: 'Y' },
+        { type: 'rparen' },
+        { type: 'eof' }
+    ])
+})
+
     it('empty input', () => {
     expect(logicTokenize('  ')).toEqual([
         { type: 'eof' }
@@ -101,7 +134,7 @@ describe('decideLogicType', () => {
     });
 
     it('detect prolog (query)', () => {
-        const tokens = logicTokenize('? P(a, b)');
+        const tokens = logicTokenize('?- P(a, b)');
         expect(decideLogicType(tokens)).toBe('prolog');
     });
 
@@ -130,4 +163,5 @@ describe('decideLogicType', () => {
         const tokens = logicTokenize(input);
         expect(decideLogicType(tokens)).toBe('prolog');
     });
+
 });

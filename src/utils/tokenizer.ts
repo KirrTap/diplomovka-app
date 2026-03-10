@@ -1,5 +1,4 @@
-//import { replaceShortcutsRealtime } from './logicInputShortcuts';
-
+// Rozšírené, rozlišuje lower_id a upper_id pre parsery
 export type LogicToken =
   | { type: 'and' }
   | { type: 'or' }
@@ -11,8 +10,8 @@ export type LogicToken =
   | { type: 'lparen' }
   | { type: 'rparen' }
   | { type: 'comma' }
-  | { type: 'minus' }
-  | { type: 'identifier'; value: string }
+  | { type: 'lower_id'; value: string }
+  | { type: 'upper_id'; value: string }
   | { type: 'unknown'; value: string }
   | { type: 'query' }
   | { type: 'rule' }
@@ -42,11 +41,15 @@ export function logicTokenize(rawInput: string): LogicToken[] {
       case '(': tokens.push({ type: 'lparen' }); i++; continue;
       case ')': tokens.push({ type: 'rparen' }); i++; continue;
       case ',': tokens.push({ type: 'comma' }); i++; continue;
-      case '-': tokens.push({ type: 'minus' }); i++; continue;
-      case '?': tokens.push({ type: 'query' }); i++; continue;
       case '.': tokens.push({ type: 'fact' }); i++; continue;
     }
     // Multi-char tokens
+    // ?- 
+    if (c === '?' && input[i+1] === '-') {
+      tokens.push({ type: 'query' });
+      i += 2;
+      continue;
+    }
     // =>
     if (c === '=' && input[i+1] === '>') {
       tokens.push({ type: 'implies' });
@@ -59,11 +62,16 @@ export function logicTokenize(rawInput: string): LogicToken[] {
       i += 2;
       continue;
     }
-    // identifier (letter or digit starts)
+    // identifier rozlišuje: lower_id (variable/funkcia), upper_id (predikát/konštanta)
     if (c.match(/[a-zA-Z_]/)) {
       let start = i;
       while (i < input.length && input[i].match(/[a-zA-Z0-9_]/)) i++;
-      tokens.push({ type: 'identifier', value: input.slice(start, i) });
+      const value = input.slice(start, i);
+      if (value[0].match(/[A-Z]/)) {
+        tokens.push({ type: 'upper_id', value });
+      } else {
+        tokens.push({ type: 'lower_id', value });
+      }
       continue;
     }
     // unknown
