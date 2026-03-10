@@ -4,6 +4,12 @@
   "search_strategy": "Stratégia prehľadávania:",
   "process_formula": "Spracovať formulu",
   "errors": {
-    "error_unknown_character": "Neznámy znak '{value}'"
-  }
+    "error_unknown_character": "Neznámy znak '{value}'",
+    "quantifier_variable_missing": "Za kvantifikátorom musí nasledovať premenná",
+    "error_parentheses": "Problém so zátvorkami",
+    "error_no_binary_connective": "Formula musí obsahovať aspoň jednu binárnu spojku (∧, ∨, =>)",
+    "error_unexpected_variable": "Premenná '{value}' nemôže vystupovať samostatne"
+  },
+  "transformation_steps": "Kroky transformácie",
+  "processed_formula": "Spracovaná formula (AST):"
 }

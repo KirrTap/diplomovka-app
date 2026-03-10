@@ -4,6 +4,12 @@
   "search_strategy": "Search strategy:",
   "process_formula": "Process formula",
   "errors": {
-    "error_unknown_character": "Unknown character '{value}'"
-  }
+    "error_unknown_character": "Unknown character '{value}'",
+    "quantifier_variable_missing": "Quantifier must be followed by a variable",
+    "error_parentheses": "Problem with parentheses",
+    "error_no_binary_connective": "Formula must contain at least one binary connective (∧, ∨, =>)",
+    "error_unexpected_variable": "Variable '{value}' cannot stand alone"
+  },
+  "transformation_steps": "Transformation steps",
+  "processed_formula": "Processed formula (AST):"
 }
