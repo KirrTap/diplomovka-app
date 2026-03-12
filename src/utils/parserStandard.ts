@@ -168,49 +168,50 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
     throw new Error('errors.error_parentheses');
   }
 
-  // Check if the formula contains at least one binary logical connector (and, or, implies)
-  function hasBinaryConnective(node: ASTNode): boolean {
-    if (node.type === 'BinaryExpression') {
-      return true;
-    }
-    if (node.type === 'UnaryExpression') {
-      return hasBinaryConnective(node.operand);
-    }
-    if (node.type === 'Quantifier') {
-      return hasBinaryConnective(node.formula);
-    }
-    return false;
-  }
-
-  if (!hasBinaryConnective(ast)) {
-    throw new Error('errors.error_no_binary_connective');
-  }
-
-  if (peek().type !== 'eof') {
-    throw new Error('error_parentheses');
-  }
   return ast;
 }
 
 
-export function stringifyAST(node: ASTNode): string {
+export function stringifyAST(node: ASTNode, parentType?: ASTNode['type']): string {
   switch (node.type) {
     case 'BinaryExpression': {
       const ops = { and: '∧', or: '∨', implies: '=>' };
-      return `(${stringifyAST(node.left)} ${ops[node.operator]} ${stringifyAST(node.right)})`;
+      const leftStr = stringifyAST(node.left, 'BinaryExpression');
+      const rightStr = stringifyAST(node.right, 'BinaryExpression');
+      return `(${leftStr} ${ops[node.operator]} ${rightStr})`;
     }
-    case 'UnaryExpression':
-      return `¬${stringifyAST(node.operand)}`;
+    case 'UnaryExpression': {
+      const operandStr = stringifyAST(node.operand, 'UnaryExpression');
+      // Add parentheses only if operand is also a UnaryExpression (nested negation)
+      if (node.operand.type === 'UnaryExpression') {
+        return `¬(${operandStr})`;
+      }
+      return `¬${operandStr}`;
+    }
     case 'Quantifier': {
       const syms = { forall: '∀', exists: '∃' };
-      return `(${syms[node.symbol]}${node.variable}) ${stringifyAST(node.formula)}`;
+      const formulaStr = stringifyAST(node.formula, 'Quantifier');
+      const result = `(${syms[node.symbol]}${node.variable})${formulaStr}`;
+      
+      // If quantifier is operand of binary expression, wrap in parentheses
+      // because quantifier has stronger binding than binary operators
+      if (parentType === 'BinaryExpression') {
+        return `(${result})`;
+      }
+      
+      // If at top level and formula contains binary expression or quantifier, wrap in parentheses
+      if (!parentType && (node.formula.type === 'BinaryExpression' || node.formula.type === 'Quantifier')) {
+        return `(${result})`;
+      }
+      
+      return result;
     }
     case 'Predicate':
       return node.args.length > 0
-        ? `${node.name}(${node.args.map(stringifyAST).join(', ')})`
+        ? `${node.name}(${node.args.map(arg => stringifyAST(arg)).join(',')})`
         : node.name;
     case 'Function':
-      return `${node.name}(${node.args.map(stringifyAST).join(', ')})`;
+      return `${node.name}(${node.args.map(arg => stringifyAST(arg)).join(',')})`;
     case 'Constant':
     case 'Variable':
       return node.name;
