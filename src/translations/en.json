@@ -7,8 +7,14 @@
     "error_unknown_character": "Unknown character '{value}'",
     "quantifier_variable_missing": "Quantifier must be followed by a variable",
     "error_parentheses": "Problem with parentheses",
+    "error_unexpected_comma": "Unexpected comma in arguments",
+    "error_empty_arguments": "Arguments cannot be empty",
+    "error_operator_inside_arguments": "Operator inside Predicate or Function arguments",
     "error_no_binary_connective": "Formula must contain at least one binary connective (∧, ∨, =>)",
-    "error_unexpected_variable": "Variable '{value}' cannot stand alone"
+    "error_unexpected_variable": "Variable '{value}' cannot stand alone",
+    "error_unexpected_token": "Unexpected token: {value}",
+    "unexpected_combination_operators": "Unexpected combination of operators",
+    "error_expected_term": "Expected a term (variable, constant, or function) but found {value}"
   },
   "transformation_steps": "Transformation steps",
   "processed_formula": "Processed formula (AST):"

@@ -7,8 +7,14 @@
     "error_unknown_character": "Neznámy znak '{value}'",
     "quantifier_variable_missing": "Za kvantifikátorom musí nasledovať premenná",
     "error_parentheses": "Problém so zátvorkami",
+    "error_unexpected_comma": "Neočakávaná čiarka v argumentoch",
+    "error_empty_arguments": "Argumenty nemôžu byť prázdne",
+    "error_operator_inside_arguments": "Operátor v argumentoch predikátu alebo funkcie",
     "error_no_binary_connective": "Formula musí obsahovať aspoň jednu binárnu spojku (∧, ∨, =>)",
-    "error_unexpected_variable": "Premenná '{value}' nemôže vystupovať samostatne"
+    "error_unexpected_variable": "Premenná '{value}' nemôže vystupovať samostatne",
+    "error_unexpected_token": "Neočakávaný symbol: {value}",
+    "unexpected_combination_operators": "Neočakávaná kombinácia operátorov",
+    "error_expected_term": "Očakával sa term (premenná, konštanta alebo funkcia), ale našlo sa {value}"
   },
   "transformation_steps": "Kroky transformácie",
   "processed_formula": "Spracovaná formula (AST):"

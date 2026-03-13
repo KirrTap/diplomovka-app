@@ -93,10 +93,8 @@ export const InputForm = ({ onProcess, externalError, setExternalError }: InputF
                     <SymbolButton symbol="⊢" onClick={handleInsertSymbol} />
                     <SymbolButton symbol="∀" onClick={handleInsertSymbol} />
                     <SymbolButton symbol="∃" onClick={handleInsertSymbol} />
-                    <SymbolButton symbol="(" onClick={handleInsertSymbol} />
-                    <SymbolButton symbol=")" onClick={handleInsertSymbol} />
                 </div>
-                <div className="flex items-center gap-8 flex-wrap">
+                <div className="flex items-center gap-12 flex-wrap">
                     <SearchStrategySwitcher strategy={strategy} setStrategy={setStrategy} />
                     <ProcessButton onClick={handleProcess} />
                 </div>
