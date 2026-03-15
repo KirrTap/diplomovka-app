@@ -14,8 +14,13 @@
     "error_unexpected_variable": "Variable '{value}' cannot stand alone",
     "error_unexpected_token": "Unexpected token: {value}",
     "unexpected_combination_operators": "Unexpected combination of operators",
-    "error_expected_term": "Expected a term (variable, constant, or function) but found {value}"
+    "error_expected_term": "Expected a term (variable, constant, or function) but found {value}",
+    "error_missing_right_side": "Missing right side for operator {value}",
+    "error_missing_left_side": "Missing left side for operator {value}",
+    "error_predicate_as_argument": "Predicate '{value}' cannot be an argument of another predicate or function"
   },
   "transformation_steps": "Transformation steps",
-  "processed_formula": "Processed formula (AST):"
+  "parsed_formula": "Parsed formula",
+  "negated_formula": "Negated formula",
+  "nnf_formula": "Negation Normal Form (NNF)"
 }

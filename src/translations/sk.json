@@ -14,8 +14,13 @@
     "error_unexpected_variable": "Premenná '{value}' nemôže vystupovať samostatne",
     "error_unexpected_token": "Neočakávaný symbol: {value}",
     "unexpected_combination_operators": "Neočakávaná kombinácia operátorov",
-    "error_expected_term": "Očakával sa term (premenná, konštanta alebo funkcia), ale našlo sa {value}"
+    "error_expected_term": "Očakával sa term (premenná, konštanta alebo funkcia), ale našlo sa {value}",
+    "error_missing_right_side": "Chýba pravá strana pre spojku {value}",
+    "error_missing_left_side": "Chýba ľavá strana pre spojku {value}",
+    "error_predicate_as_argument": "Predikát '{value}' nemôže byť argumentom iného predikátu alebo funkcie"
   },
   "transformation_steps": "Kroky transformácie",
-  "processed_formula": "Spracovaná formula (AST):"
+  "parsed_formula": "Parsovaná formula",
+  "negated_formula": "Negovaná formula",
+  "nnf_formula": "Negatívna normálna forma (NNF)"
 }
