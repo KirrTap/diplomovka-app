@@ -1,27 +1,114 @@
-import { stringifyNegated, negateFormula } from "../src/utils/transformSteps";
-import { parseStandardFormula } from "../src/utils/parserStandard";
-import { logicTokenize } from "../src/utils/tokenizer";
+import {
+  removeImpliesFromString,
+  negateFormulaFromString,
+  toNNFFromString,
+} from "../src/utils/transformSteps";
 import { describe, it, expect } from "vitest";
 
 describe("negated formula", () => {
   it("(A ∧ B) ∨ C ", () => {
-    const input = "(A ∧ B) ∨ C";
-    const ast = parseStandardFormula(logicTokenize(input));
-    const negatedAst = negateFormula(ast);
-    expect(stringifyNegated(negatedAst)).toBe("¬((A ∧ B) ∨ C)");
+    expect(negateFormulaFromString("(A ∧ B) ∨ C")).toBe("¬((A ∧ B) ∨ C)");
   });
 
   it("¬P(x) => (Q(y) ∧ ¬P(x))", () => {
-    const input = "¬P(x) => (Q(y) ∧ ¬P(x))";
-    const ast = parseStandardFormula(logicTokenize(input));
-    const negatedAst = negateFormula(ast);
-    expect(stringifyNegated(negatedAst)).toBe("¬(¬P(x) => (Q(y) ∧ ¬P(x)))");
+    expect(negateFormulaFromString("¬P(x) => (Q(y) ∧ ¬P(x))")).toBe(
+      "¬(¬P(x) => (Q(y) ∧ ¬P(x)))",
+    );
   });
 
   it("(∀x)¬(∃y)(P(x,y) ∧ ¬Q(y))", () => {
-    const input = "(∀x)¬(∃y)(P(x,y) ∧ ¬Q(y))";
-    const ast = parseStandardFormula(logicTokenize(input));
-    const negatedAst = negateFormula(ast);
-    expect(stringifyNegated(negatedAst)).toBe("¬((∀x)¬(∃y)(P(x,y) ∧ ¬Q(y)))");
+    expect(negateFormulaFromString("(∀x)¬(∃y)(P(x,y) ∧ ¬Q(y))")).toBe(
+      "¬((∀x)¬(∃y)(P(x,y) ∧ ¬Q(y)))",
+    );
+  });
+
+  it("A => B", () => {
+    expect(negateFormulaFromString("A => B")).toBe("¬(A => B)");
+  });
+
+  it("P(a) ∧ (Q(b) ∨ (R(c) ∧ S(d)))", () => {
+    expect(negateFormulaFromString("P(a) ∧ (Q(b) ∨ (R(c) ∧ S(d)))")).toBe(
+      "¬(P(a) ∧ (Q(b) ∨ (R(c) ∧ S(d))))",
+    );
+  });
+
+  it("(((∀x)(Clovek(x) => Smrtelny(x))) ∧ Clovek(Sokrates)) => Smrtelny(Sokrates)", () => {
+    expect(
+      negateFormulaFromString(
+        "(((∀x)(Clovek(x) => Smrtelny(x))) ∧ Clovek(Sokrates)) => Smrtelny(Sokrates)",
+      ),
+    ).toBe(
+      "¬((((∀x)(Clovek(x) => Smrtelny(x))) ∧ Clovek(Sokrates)) => Smrtelny(Sokrates))",
+    );
+  });
+});
+
+describe("replace implies", () => {
+  it("¬(A => B)", () => {
+    expect(removeImpliesFromString("¬(A => B)")).toBe("¬(¬A ∨ B)");
+  });
+
+  it("¬((A ∧ B) ∨ C) ", () => {
+    expect(removeImpliesFromString("¬((A ∧ B) ∨ C)")).toBe("¬((A ∧ B) ∨ C)");
+  });
+
+  it("¬(¬P(x) => (Q(y) ∧ ¬P(x)))", () => {
+    expect(removeImpliesFromString("¬(¬P(x) => (Q(y) ∧ ¬P(x)))")).toBe(
+      "¬(P(x) ∨ (Q(y) ∧ ¬P(x)))",
+    );
+  });
+
+  it("¬(A => (B => C))", () => {
+    expect(removeImpliesFromString("¬(A => (B => C))")).toBe(
+      "¬(¬A ∨ (¬B ∨ C))",
+    );
+  });
+
+  it("(A => B) => C", () => {
+    expect(removeImpliesFromString("(A => B) => C")).toBe("¬(¬A ∨ B) ∨ C");
+  });
+
+  it("¬((((∀x)(Clovek(x) => Smrtelny(x))) ∧ Clovek(Sokrates)) => Smrtelny(Sokrates))", () => {
+    expect(
+      removeImpliesFromString(
+        "¬((((∀x)(Clovek(x) => Smrtelny(x))) ∧ Clovek(Sokrates)) => Smrtelny(Sokrates))",
+      ),
+    ).toBe(
+      "¬(¬(((∀x)(¬Clovek(x) ∨ Smrtelny(x))) ∧ Clovek(Sokrates)) ∨ Smrtelny(Sokrates))",
+    );
+  });
+});
+
+describe("to NNF", () => {
+  it("¬(¬A ∨ B)", () => {
+    expect(toNNFFromString("¬(¬A ∨ B)")).toBe("A ∧ ¬B");
+  });
+
+  it("¬((A ∧ B) ∨ C)", () => {
+    expect(toNNFFromString("¬((A ∧ B) ∨ C)")).toBe("(¬A ∨ ¬B) ∧ ¬C");
+  });
+
+  it("¬(¬A ∨ (¬B ∨ C))", () => {
+    expect(toNNFFromString("¬(¬A ∨ (¬B ∨ C))")).toBe("A ∧ (B ∧ ¬C)");
+  });
+
+  it("¬(((∀x)P(x)) ∨ R(a))", () => {
+    expect(toNNFFromString("¬(((∀x)P(x)) ∨ R(a))")).toBe("((∃x)¬P(x)) ∧ ¬R(a)");
+  });
+
+  it("¬((∀x)P(x)) ∨ ((∃y) (Q(y) ∧ ¬R(b))))", () => {
+    expect(toNNFFromString("¬((∀x P(x)) ∨ (∃y (Q(y) ∧ ¬R(b))))")).toBe(
+      "((∃x)¬P(x)) ∧ ((∀y)(¬Q(y) ∨ R(b)))",
+    );
+  });
+
+  it("¬(¬(((∀x)(¬Clovek(x) ∨ Smrtelny(x))) ∧ Clovek(Sokrates)) ∨ Smrtelny(Sokrates))", () => {
+    expect(
+      toNNFFromString(
+        "¬(¬(((∀x)(¬Clovek(x) ∨ Smrtelny(x))) ∧ Clovek(Sokrates)) ∨ Smrtelny(Sokrates))",
+      ),
+    ).toBe(
+      "(((∀x)(¬Clovek(x) ∨ Smrtelny(x))) ∧ Clovek(Sokrates)) ∧ ¬Smrtelny(Sokrates)",
+    );
   });
 });

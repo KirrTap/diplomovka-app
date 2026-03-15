@@ -22,5 +22,6 @@
   "transformation_steps": "Transformation steps",
   "parsed_formula": "Parsed formula",
   "negated_formula": "Negated formula",
+  "removed_implies": "Removed implications",
   "nnf_formula": "Negation Normal Form (NNF)"
 }

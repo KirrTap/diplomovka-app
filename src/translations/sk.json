@@ -22,5 +22,6 @@
   "transformation_steps": "Kroky transformácie",
   "parsed_formula": "Parsovaná formula",
   "negated_formula": "Negovaná formula",
+  "removed_implies": "Odstránenie implikácií",
   "nnf_formula": "Negatívna normálna forma (NNF)"
 }

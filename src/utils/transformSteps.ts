@@ -1,4 +1,9 @@
-import { type ASTNode, stringifyAST } from "./parserStandard";
+import {
+  type ASTNode,
+  stringifyAST,
+  parseStandardFormula,
+} from "./parserStandard";
+import { logicTokenize } from "./tokenizer";
 
 //Negated formula
 export function negateFormula(ast: ASTNode): ASTNode {
@@ -27,7 +32,59 @@ export function stringifyNegated(ast: ASTNode): string {
   return stringifyAST(ast);
 }
 
+/**
+ * 1. Prepis implikácií (A => B  ->  ¬A ∨ B)
+ */
+export function replaceImplies(node: ASTNode): ASTNode {
+  switch (node.type) {
+    case "BinaryExpression":
+      if (node.operator === "implies") {
+        const left = replaceImplies(node.left);
+        const right = replaceImplies(node.right);
+
+        // Ak je ľavá strana už negovaná (¬P), tak ¬(¬P) zmeníme na P
+        if (left.type === "UnaryExpression" && left.operator === "not") {
+          return {
+            type: "BinaryExpression",
+            operator: "or",
+            left: left.operand,
+            right: right,
+          };
+        }
+
+        return {
+          type: "BinaryExpression",
+          operator: "or",
+          left: {
+            type: "UnaryExpression",
+            operator: "not",
+            operand: left,
+          },
+          right: right,
+        };
+      }
+      return {
+        ...node,
+        left: replaceImplies(node.left),
+        right: replaceImplies(node.right),
+      };
+    case "UnaryExpression":
+      return {
+        ...node,
+        operand: replaceImplies(node.operand),
+      };
+    case "Quantifier":
+      return {
+        ...node,
+        formula: replaceImplies(node.formula),
+      };
+    default:
+      return node;
+  }
+}
+
 // Negation Normal Form (NNF)
+// Predpokladá, že implikácie už sú odstránené.
 export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
   if (negated) {
     switch (node.type) {
@@ -39,22 +96,15 @@ export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
             left: toNNF(node.left, true),
             right: toNNF(node.right, true),
           };
-        } else if (node.operator === "or") {
+        } else {
+          // predtým tu bol aj "implies", teraz len "or"
           return {
             type: "BinaryExpression",
             operator: "and",
             left: toNNF(node.left, true),
             right: toNNF(node.right, true),
           };
-        } else if (node.operator === "implies") {
-          return {
-            type: "BinaryExpression",
-            operator: "and",
-            left: toNNF(node.left, false),
-            right: toNNF(node.right, true),
-          };
         }
-        break;
 
       case "UnaryExpression":
         if (node.operator === "not") {
@@ -88,14 +138,7 @@ export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
   } else {
     switch (node.type) {
       case "BinaryExpression":
-        if (node.operator === "implies") {
-          return {
-            type: "BinaryExpression",
-            operator: "or",
-            left: toNNF(node.left, true),
-            right: toNNF(node.right, false),
-          };
-        }
+        // Tu už nečakáme implies, toNNF len rekurzívne pokračuje
         return {
           ...node,
           left: toNNF(node.left, false),
@@ -119,4 +162,28 @@ export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
     }
   }
   return node;
+}
+
+/**
+ * String interface helpers for testing and simple transformations
+ */
+
+export function negateFormulaFromString(formula: string): string {
+  const tokens = logicTokenize(formula);
+  const ast = parseStandardFormula(tokens);
+  // Použijeme stringifyNegated, aby sme mali pekný výstup ¬(...)
+  return stringifyNegated(negateFormula(ast));
+}
+
+export function toNNFFromString(formula: string): string {
+  const tokens = logicTokenize(formula);
+  const ast = parseStandardFormula(tokens);
+  // NNF vyžaduje odstránenie implikácií ako prvý krok
+  return stringifyAST(toNNF(replaceImplies(ast)));
+}
+
+export function removeImpliesFromString(formula: string): string {
+  const tokens = logicTokenize(formula);
+  const ast = parseStandardFormula(tokens);
+  return stringifyAST(replaceImplies(ast));
 }
