@@ -2,6 +2,7 @@ import {
   removeImpliesFromString,
   negateFormulaFromString,
   toNNFFromString,
+  renameQuantifierVariablesFromString,
 } from "../src/utils/transformSteps";
 import { describe, it, expect } from "vitest";
 
@@ -110,5 +111,23 @@ describe("to NNF", () => {
     ).toBe(
       "(((∀x)(¬Clovek(x) ∨ Smrtelny(x))) ∧ Clovek(Sokrates)) ∧ ¬Smrtelny(Sokrates)",
     );
+  });
+});
+
+describe("with unique bound variable names", () => {
+  it("((∃x)¬P(x)) ∧ (((∀x)¬Q(x)) ∧ ((∃x)¬R(x)))", () => {
+    expect(
+      renameQuantifierVariablesFromString(
+        "((∃x)¬P(x)) ∧ (((∀x)¬Q(x)) ∧ ((∃x)¬R(x)))",
+      ),
+    ).toBe("((∃x)¬P(x)) ∧ (((∀a)¬Q(a)) ∧ ((∃a₁)¬R(a₁)))");
+  });
+
+  it("((∀x)(∃y)P(x,y)) ∧ ((∀y)(∃x)¬P(y,x))", () => {
+    expect(
+      renameQuantifierVariablesFromString(
+        "((∀x)(∃y)P(x,y)) ∧ ((∀y)(∃x)¬P(y,x))",
+      ),
+    ).toBe("((∀x)(∃y)P(x,y)) ∧ ((∀a)(∃a₁)¬P(a,a₁))");
   });
 });

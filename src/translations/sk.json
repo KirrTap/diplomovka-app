@@ -7,13 +7,13 @@
     "error_unknown_character": "Neznámy znak '{value}'",
     "quantifier_variable_missing": "Za kvantifikátorom musí nasledovať premenná",
     "error_parentheses": "Problém so zátvorkami",
-    "error_unexpected_comma": "Neočakávaná čiarka v argumentoch",
+    "error_unexpected_comma": "Neočekávaná čiarka v argumentoch",
     "error_empty_arguments": "Argumenty nemôžu byť prázdne",
     "error_operator_inside_arguments": "Operátor v argumentoch predikátu alebo funkcie",
     "error_no_binary_connective": "Formula musí obsahovať aspoň jednu binárnu spojku (∧, ∨, =>)",
     "error_unexpected_variable": "Premenná '{value}' nemôže vystupovať samostatne",
-    "error_unexpected_token": "Neočakávaný symbol: {value}",
-    "unexpected_combination_operators": "Neočakávaná kombinácia operátorov",
+    "error_unexpected_token": "Neočekávaný symbol: {value}",
+    "unexpected_combination_operators": "Neočekávaná kombinácia operátorov",
     "error_expected_term": "Očakával sa term (premenná, konštanta alebo funkcia), ale našlo sa {value}",
     "error_missing_right_side": "Chýba pravá strana pre spojku {value}",
     "error_missing_left_side": "Chýba ľavá strana pre spojku {value}",
@@ -23,5 +23,6 @@
   "parsed_formula": "Parsovaná formula",
   "negated_formula": "Negovaná formula",
   "removed_implies": "Odstránenie implikácií",
-  "nnf_formula": "Negatívna normálna forma (NNF)"
+  "nnf_formula": "Negatívna normálna forma (NNF)",
+  "nnf_unique_vars": "NNF s unikátnymi viazanými premennými"
 }

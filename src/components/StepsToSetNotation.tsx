@@ -6,6 +6,7 @@ import {
   stringifyNegated,
   toNNF,
   replaceImplies,
+  renameQuantifierVariables,
 } from "../utils/transformSteps";
 import { useLanguage } from "../translations/LanguageContext";
 
@@ -29,12 +30,14 @@ export const StepsToSetNotation = ({
       const negated = negateFormula(ast);
       const withoutImplies = replaceImplies(negated);
       const nnf = toNNF(withoutImplies);
+      const nnfUniqueVars = renameQuantifierVariables(nnf);
 
       return {
         parsed: stringifyAST(ast),
         negated: stringifyNegated(negated),
         noImplies: stringifyAST(withoutImplies),
         nnf: stringifyAST(nnf),
+        nnfUniqueVars: stringifyAST(nnfUniqueVars),
       };
     } catch (e: any) {
       onError(e.message);
@@ -80,6 +83,14 @@ export const StepsToSetNotation = ({
           <h3 className="font-semibold text-blue-600">{t("nnf_formula")}</h3>
           <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
             {results.nnf}
+          </div>
+        </div>
+        <div>
+          <h3 className="font-semibold text-blue-600">
+            {t("nnf_unique_vars")}
+          </h3>
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
+            {results.nnfUniqueVars}
           </div>
         </div>
       </div>
