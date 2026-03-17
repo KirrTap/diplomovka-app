@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { EXAMPLES } from "./examples";
 import { useLanguage } from "../../translations/LanguageContext";
 import { replaceShortcutsRealtime } from "../../utils/logicInputShortcuts";
 import { logicTokenize, type LogicToken } from "../../utils/tokenizer";
@@ -26,6 +27,17 @@ export const InputForm = ({
   const [inputValue, setInputValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [strategy, setStrategy] = useState<SearchStrategy>("bfs");
+  const [showExamples, setShowExamples] = useState(false);
+  const exampleBtnRef = useRef<HTMLButtonElement>(null);
+  const handleExampleSelect = (exampleValue: string) => {
+    setInputValue(exampleValue);
+    setShowExamples(false);
+    setExternalError(null);
+    onProcess(null);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
 
   const handleInsertSymbol = (symbol: string) => {
     if (textareaRef.current) {
@@ -74,9 +86,56 @@ export const InputForm = ({
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 py-4 px-8 flex flex-col">
-      <label className="block text-lg font-semibold text-gray-700 mb-4">
+      <label className="block text-lg font-semibold text-gray-700 mb-2">
         {t("enter_formula")}
       </label>
+      <div className="mb-4">
+        <div className="relative inline-block">
+          <button
+            ref={exampleBtnRef}
+            type="button"
+            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 bg-white text-black font-medium hover:bg-gray-100 min-w-[120px]"
+            style={{ minWidth: 120 }}
+            onClick={() => setShowExamples((v) => !v)}
+          >
+            <span className="flex-1 text-left">Príklady</span>
+            <svg
+              className="w-4 h-4 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+          {showExamples && (
+            <div
+              className="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 left-0"
+              style={{
+                minWidth: exampleBtnRef.current
+                  ? exampleBtnRef.current.offsetWidth
+                  : 140,
+              }}
+            >
+              {EXAMPLES.map((ex) => (
+                <button
+                  key={ex.label}
+                  className="block w-full text-left px-4 py-2 hover:bg-blue-50 text-gray-800"
+                  onClick={() => handleExampleSelect(ex.value)}
+                  type="button"
+                >
+                  {ex.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       <textarea
         ref={textareaRef}
         value={inputValue}
