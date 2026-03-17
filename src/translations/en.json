@@ -24,5 +24,9 @@
   "negated_formula": "Negated formula",
   "removed_implies": "Removed implications",
   "nnf_formula": "Negation Normal Form (NNF)",
-  "nnf_unique_vars": "NNF with unique bound variable names"
+  "nnf_unique_vars": "NNF with unique bound variable names",
+  "pnf_formula": "Prenex Normal Form (PNF)",
+  "skolem_formula": "Skolem Normal Form (SNF)",
+  "removed_quantifiers": "Removed Universal Quantifiers",
+  "cnf_formula": "Conjunctive Normal Form (CNF)"
 }

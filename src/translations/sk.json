@@ -24,5 +24,9 @@
   "negated_formula": "Negovaná formula",
   "removed_implies": "Odstránenie implikácií",
   "nnf_formula": "Negatívna normálna forma (NNF)",
-  "nnf_unique_vars": "NNF s unikátnymi viazanými premennými"
+  "nnf_unique_vars": "NNF s unikátnymi viazanými premennými",
+  "pnf_formula": "Prenexná normálna forma (PNF)",
+  "skolem_formula": "Skolemovský normálny tvar (SNF)",
+  "removed_quantifiers": "Vynechanie všeobecných kvantifikátorov",
+  "cnf_formula": "Konjunktívna normálna forma (CNF)"
 }

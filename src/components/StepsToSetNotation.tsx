@@ -7,6 +7,9 @@ import {
   toNNF,
   replaceImplies,
   renameQuantifierVariables,
+  toPNF,
+  skolemize,
+  removeForallQuantifiers
 } from "../utils/transformSteps";
 import { useLanguage } from "../translations/LanguageContext";
 
@@ -31,6 +34,9 @@ export const StepsToSetNotation = ({
       const withoutImplies = replaceImplies(negated);
       const nnf = toNNF(withoutImplies);
       const nnfUniqueVars = renameQuantifierVariables(nnf);
+      const pnf = toPNF(nnfUniqueVars);
+      const skolemized = skolemize(pnf);
+      const removedForall = removeForallQuantifiers(skolemized);
 
       return {
         parsed: stringifyAST(ast),
@@ -38,6 +44,9 @@ export const StepsToSetNotation = ({
         noImplies: stringifyAST(withoutImplies),
         nnf: stringifyAST(nnf),
         nnfUniqueVars: stringifyAST(nnfUniqueVars),
+        pnf: stringifyAST(pnf),
+        skolemized: stringifyAST(skolemized),
+        removedForall: stringifyAST(removedForall),
       };
     } catch (e: any) {
       onError(e.message);
@@ -93,6 +102,34 @@ export const StepsToSetNotation = ({
             {results.nnfUniqueVars}
           </div>
         </div>
+
+        <div>
+          <h3 className="font-semibold text-blue-600">
+            {t("pnf_formula")}
+          </h3>
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
+            {results.pnf}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="font-semibold text-blue-600">
+            {t("skolemized_formula")}
+          </h3>
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
+            {results.skolemized}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="font-semibold text-blue-600">
+            {t("removed_forall")}
+          </h3>
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
+            {results.removedForall}
+          </div>
+        </div>
+
       </div>
     </div>
   );

@@ -93,7 +93,13 @@ export function logicTokenize(rawInput: string): LogicToken[] {
     }
     if (c.match(/[a-zA-Z_]/)) {
       let start = i;
-      while (i < input.length && input[i].match(/[a-zA-Z0-9_]/)) i++;
+      const SUBSCRIPT_REGEX = /[₀₁₂₃₄₅₆₇₈₉]/;
+      while (
+        i < input.length &&
+        (input[i].match(/[a-zA-Z0-9_]/) || input[i].match(SUBSCRIPT_REGEX))
+      ) {
+        i++;
+      }
       const value = input.slice(start, i);
       if (value[0].match(/[A-Z]/)) {
         tokens.push({ type: "upper_id", value });

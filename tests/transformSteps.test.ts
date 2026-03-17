@@ -131,3 +131,4 @@ describe("with unique bound variable names", () => {
     ).toBe("((∀x)(∃y)P(x,y)) ∧ ((∀a)(∃a₁)¬P(a,a₁))");
   });
 });
+
