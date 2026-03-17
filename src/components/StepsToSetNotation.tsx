@@ -9,7 +9,9 @@ import {
   renameQuantifierVariables,
   toPNF,
   skolemize,
-  removeForallQuantifiers
+  removeForallQuantifiers,
+  toCNF,
+  flattenCNF,
 } from "../utils/transformSteps";
 import { useLanguage } from "../translations/LanguageContext";
 
@@ -37,6 +39,8 @@ export const StepsToSetNotation = ({
       const pnf = toPNF(nnfUniqueVars);
       const skolemized = skolemize(pnf);
       const removedForall = removeForallQuantifiers(skolemized);
+      const cnf = toCNF(removedForall);
+      const clauses = flattenCNF(cnf);
 
       return {
         parsed: stringifyAST(ast),
@@ -47,6 +51,8 @@ export const StepsToSetNotation = ({
         pnf: stringifyAST(pnf),
         skolemized: stringifyAST(skolemized),
         removedForall: stringifyAST(removedForall),
+        cnf: stringifyAST(cnf),
+        clauses: clauses,
       };
     } catch (e: any) {
       onError(e.message);
@@ -104,18 +110,14 @@ export const StepsToSetNotation = ({
         </div>
 
         <div>
-          <h3 className="font-semibold text-blue-600">
-            {t("pnf_formula")}
-          </h3>
+          <h3 className="font-semibold text-blue-600">{t("pnf_formula")}</h3>
           <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
             {results.pnf}
           </div>
         </div>
 
         <div>
-          <h3 className="font-semibold text-blue-600">
-            {t("skolemized_formula")}
-          </h3>
+          <h3 className="font-semibold text-blue-600">{t("skolem_formula")}</h3>
           <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
             {results.skolemized}
           </div>
@@ -123,13 +125,40 @@ export const StepsToSetNotation = ({
 
         <div>
           <h3 className="font-semibold text-blue-600">
-            {t("removed_forall")}
+            {t("removed_quantifiers")}
           </h3>
           <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
             {results.removedForall}
           </div>
         </div>
 
+        <div>
+          <h3 className="font-semibold text-blue-600">{t("cnf_formula")}</h3>
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
+            {results.cnf}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="font-semibold text-blue-600">{t("clause_set")}</h3>
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200 text-gray-900">
+            <span>{"{"}</span>
+            {results.clauses.map((clause, idx) => (
+              <span key={idx}>
+                <span>{"{"}</span>
+                {clause.map((lit, lIdx) => (
+                  <span key={lIdx}>
+                    <span>{lit}</span>
+                    {lIdx < clause.length - 1 && <span>, </span>}
+                  </span>
+                ))}
+                <span>{"}"}</span>
+                {idx < results.clauses.length - 1 && <span>, </span>}
+              </span>
+            ))}
+            <span>{"}"}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

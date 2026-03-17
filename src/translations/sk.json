@@ -28,5 +28,6 @@
   "pnf_formula": "Prenexná normálna forma (PNF)",
   "skolem_formula": "Skolemovský normálny tvar (SNF)",
   "removed_quantifiers": "Vynechanie všeobecných kvantifikátorov",
-  "cnf_formula": "Konjunktívna normálna forma (CNF)"
+  "cnf_formula": "Konjunktívna normálna forma (CNF)",
+  "clause_set": "Množina klauzúl (S)"
 }

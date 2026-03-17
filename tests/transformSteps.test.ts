@@ -78,6 +78,17 @@ describe("replace implies", () => {
       "¬(¬(((∀x)(¬Clovek(x) ∨ Smrtelny(x))) ∧ Clovek(Sokrates)) ∨ Smrtelny(Sokrates))",
     );
   });
+
+  it("(∀x)((((∃y)R(x,y)) ∧ ((∀y)¬S(x,y))) => ¬(((∃y)R(x,y)) ∧ P(z)))", () => {
+    expect(
+      removeImpliesFromString(
+        "(∀x)((((∃y)R(x,y)) ∧ ((∀y)¬S(x,y))) => ¬(((∃y)R(x,y)) ∧ P(z)))",
+      ),
+    ).toBe(
+      "(∀x)(¬(((∃y)R(x,y)) ∧ ((∀y)¬S(x,y))) ∨ ¬(((∃y)R(x,y)) ∧ P(z)))",
+    );
+  });
+  
 });
 
 describe("to NNF", () => {
@@ -112,6 +123,16 @@ describe("to NNF", () => {
       "(((∀x)(¬Clovek(x) ∨ Smrtelny(x))) ∧ Clovek(Sokrates)) ∧ ¬Smrtelny(Sokrates)",
     );
   });
+  
+  it("(∀x)(¬(((∃y)R(x,y)) ∧ ((∀y)¬S(x,y))) ∨ ¬(((∃y)R(x,y)) ∧ P(z)))", () => {
+    expect(
+      toNNFFromString(
+        "(∀x)(¬(((∃y)R(x,y)) ∧ ((∀y)¬S(x,y))) ∨ ¬(((∃y)R(x,y)) ∧ P(z)))",
+      ),
+    ).toBe(
+      "(∀x)((((∀y)¬R(x,y)) ∨ ((∃y)S(x,y))) ∨ (((∀y)¬R(x,y)) ∨ ¬P(z)))",
+    );
+  });
 });
 
 describe("with unique bound variable names", () => {
@@ -129,6 +150,16 @@ describe("with unique bound variable names", () => {
         "((∀x)(∃y)P(x,y)) ∧ ((∀y)(∃x)¬P(y,x))",
       ),
     ).toBe("((∀x)(∃y)P(x,y)) ∧ ((∀a)(∃a₁)¬P(a,a₁))");
+  });
+});
+
+describe("to PNF ", () => {
+  it("()", () => {
+    expect(
+      renameQuantifierVariablesFromString(
+        "((∃x)¬P(x)) ∧ (((∀x)¬Q(x)) ∧ ((∃x)¬R(x)))",
+      ),
+    ).toBe("((∃x)¬P(x)) ∧ (((∀a)¬Q(a)) ∧ ((∃a₁)¬R(a₁)))");
   });
 });
 

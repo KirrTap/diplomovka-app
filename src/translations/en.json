@@ -28,5 +28,6 @@
   "pnf_formula": "Prenex Normal Form (PNF)",
   "skolem_formula": "Skolem Normal Form (SNF)",
   "removed_quantifiers": "Removed Universal Quantifiers",
-  "cnf_formula": "Conjunctive Normal Form (CNF)"
+  "cnf_formula": "Conjunctive Normal Form (CNF)",
+  "clause_set": "Clause Set (S)"
 }

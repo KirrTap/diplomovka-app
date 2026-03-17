@@ -1,50 +1,3 @@
-// Funkcia: Odstráni všetky všeobecné kvantifikátory (forall) z AST
-export function removeForallQuantifiers(ast: ASTNode): ASTNode {
-  switch (ast.type) {
-    case "Quantifier":
-      if (ast.symbol === "forall") {
-        // Vynechaj kvantifikátor, pokračuj v tele
-        return removeForallQuantifiers(ast.formula);
-      } else {
-        // Zachovaj existenciu
-        return {
-          ...ast,
-          formula: removeForallQuantifiers(ast.formula),
-        };
-      }
-    case "Predicate":
-    case "Function":
-      return {
-        ...ast,
-        args: ast.args.map(removeForallQuantifiers),
-      };
-    case "BinaryExpression":
-      return {
-        ...ast,
-        left: removeForallQuantifiers(ast.left),
-        right: removeForallQuantifiers(ast.right),
-      };
-    case "UnaryExpression":
-      return {
-        ...ast,
-        operand: removeForallQuantifiers(ast.operand),
-      };
-    default:
-      return ast;
-  }
-}
-
-// Funkcia: Odstráni všetky všeobecné kvantifikátory (forall) zo stringovej formule
-export function removeForallQuantifiersFromString(formula: string): string {
-  try {
-    const tokens = logicTokenize(formula);
-    const ast = parseStandardFormula(tokens);
-    const withoutForall = removeForallQuantifiers(ast);
-    return stringifyAST(withoutForall);
-  } catch {
-    return formula;
-  }
-}
 import {
   type ASTNode,
   stringifyAST,
@@ -52,6 +5,9 @@ import {
 } from "./parserStandard";
 import { logicTokenize } from "./tokenizer";
 
+// --- CORE TRANSFORMATIONS (AST → AST) ---
+
+// 1. Negácia formule
 export function negateFormula(ast: ASTNode): ASTNode {
   return {
     type: "UnaryExpression",
@@ -60,23 +16,7 @@ export function negateFormula(ast: ASTNode): ASTNode {
   };
 }
 
-export function stringifyNegated(ast: ASTNode): string {
-  if (ast.type === "UnaryExpression" && ast.operator === "not") {
-    const inner = ast.operand;
-    const isSimple =
-      inner.type === "Predicate" ||
-      inner.type === "Function" ||
-      inner.type === "Constant" ||
-      inner.type === "Variable";
-    const innerStr = stringifyAST(inner);
-    if (!isSimple) {
-      return `¬(${innerStr})`;
-    }
-    return `¬${innerStr}`;
-  }
-  return stringifyAST(ast);
-}
-
+// 2. Odstránenie implikácií
 export function replaceImplies(node: ASTNode): ASTNode {
   switch (node.type) {
     case "BinaryExpression":
@@ -122,6 +62,7 @@ export function replaceImplies(node: ASTNode): ASTNode {
   }
 }
 
+// 3. Negatívna normálna forma (NNF)
 export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
   if (negated) {
     switch (node.type) {
@@ -193,11 +134,10 @@ export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
   return node;
 }
 
+// 4. Štandardizácia (unikátne premenné)
 export function renameQuantifierVariables(ast: ASTNode): ASTNode {
-  // globalUsed udržiava množinu všetkých mien premenných, ktoré sa už v kvantifikátoroch vyskytli
   const globalUsed: Set<string> = new Set();
 
-  // subscript helper pre a₁, a₂ ...
   function toSubscript(n: number): string {
     const subscripts = ["₀", "₁", "₂", "₃", "₄", "₅", "₆", "₇", "₈", "₉"];
     return String(n)
@@ -219,18 +159,12 @@ export function renameQuantifierVariables(ast: ASTNode): ASTNode {
     switch (node.type) {
       case "Quantifier": {
         let newVarName = node.variable;
-
-        // Ak je táto premenná kvantifikátora už globálne použitá niekde inde, musíme ju premenovať
         if (globalUsed.has(node.variable)) {
           newVarName = getNextVarName();
         }
-
         globalUsed.add(newVarName);
-
-        // Vytvoríme nový kontext nahradení pre telo kvantifikátora
         const newReplacements = new Map(replacements);
         newReplacements.set(node.variable, newVarName);
-
         return {
           ...node,
           variable: newVarName,
@@ -244,7 +178,6 @@ export function renameQuantifierVariables(ast: ASTNode): ASTNode {
           args: node.args.map((arg) => traverse(arg, replacements)),
         };
       case "Variable":
-        // Ak máme pre túto premennú v aktuálnom kontexte náhradu, použijeme ju
         if (replacements.has(node.name)) {
           return { ...node, name: replacements.get(node.name)! };
         }
@@ -268,6 +201,7 @@ export function renameQuantifierVariables(ast: ASTNode): ASTNode {
   return traverse(ast, new Map());
 }
 
+// 5. Prenexná normálna forma (PNF)
 export function toPNF(node: ASTNode): ASTNode {
   const quantifiers: { symbol: "forall" | "exists"; variable: string }[] = [];
 
@@ -294,7 +228,6 @@ export function toPNF(node: ASTNode): ASTNode {
 
   const matrix = collectAndStrip(node);
 
-  // Zoradíme kvantifikátory: najprv existenčné (exists), potom univerzálne (forall)
   const sortedQuantifiers = [...quantifiers].sort((a, b) => {
     if (a.symbol === "exists" && b.symbol === "forall") return -1;
     if (a.symbol === "forall" && b.symbol === "exists") return 1;
@@ -314,6 +247,7 @@ export function toPNF(node: ASTNode): ASTNode {
   return result;
 }
 
+// 6. Skolemizácia (SNF)
 export function skolemize(ast: ASTNode): ASTNode {
   const globalUsed: Set<string> = new Set();
 
@@ -343,7 +277,6 @@ export function skolemize(ast: ASTNode): ASTNode {
     return "f" + toSubscript(idx);
   }
 
-  // Najprv zozbierame všetky existujúce názvy funkcií a konštánt, aby sme sa im vyhli
   function collectNames(node: ASTNode) {
     if (node.type === "Function" || node.type === "Predicate") {
       globalUsed.add(node.name);
@@ -384,7 +317,6 @@ export function skolemize(ast: ASTNode): ASTNode {
               args: universals.map((v) => ({ type: "Variable", name: v })),
             };
           }
-
           const newReplacements = new Map(replacements);
           newReplacements.set(node.variable, replacement);
           return transform(node.formula, universals, newReplacements);
@@ -430,7 +362,164 @@ export function skolemize(ast: ASTNode): ASTNode {
   return transform(ast, [], new Map());
 }
 
-// Funkcia: Odstráni implikácie zo stringovej formule
+// 7. Vynechanie všeobecných kvantifikátorov
+export function removeForallQuantifiers(ast: ASTNode): ASTNode {
+  switch (ast.type) {
+    case "Quantifier":
+      if (ast.symbol === "forall") {
+        return removeForallQuantifiers(ast.formula);
+      } else {
+        return {
+          ...ast,
+          formula: removeForallQuantifiers(ast.formula),
+        };
+      }
+    case "Predicate":
+    case "Function":
+      return {
+        ...ast,
+        args: ast.args.map(removeForallQuantifiers),
+      };
+    case "BinaryExpression":
+      return {
+        ...ast,
+        left: removeForallQuantifiers(ast.left),
+        right: removeForallQuantifiers(ast.right),
+      };
+    case "UnaryExpression":
+      return {
+        ...ast,
+        operand: removeForallQuantifiers(ast.operand),
+      };
+    default:
+      return ast;
+  }
+}
+
+// 8. Konjunktívna normálna forma (CNF)
+export function toCNF(node: ASTNode): ASTNode {
+  switch (node.type) {
+    case "BinaryExpression":
+      if (node.operator === "and") {
+        return {
+          type: "BinaryExpression",
+          operator: "and",
+          left: toCNF(node.left),
+          right: toCNF(node.right),
+        };
+      }
+      if (node.operator === "or") {
+        const left = toCNF(node.left);
+        const right = toCNF(node.right);
+
+        if (left.type === "BinaryExpression" && left.operator === "and") {
+          return toCNF({
+            type: "BinaryExpression",
+            operator: "and",
+            left: {
+              type: "BinaryExpression",
+              operator: "or",
+              left: left.left,
+              right: right,
+            },
+            right: {
+              type: "BinaryExpression",
+              operator: "or",
+              left: left.right,
+              right: right,
+            },
+          });
+        }
+        if (right.type === "BinaryExpression" && right.operator === "and") {
+          return toCNF({
+            type: "BinaryExpression",
+            operator: "and",
+            left: {
+              type: "BinaryExpression",
+              operator: "or",
+              left: left,
+              right: right.left,
+            },
+            right: {
+              type: "BinaryExpression",
+              operator: "or",
+              left: left,
+              right: right.right,
+            },
+          });
+        }
+        return {
+          type: "BinaryExpression",
+          operator: "or",
+          left,
+          right,
+        };
+      }
+      return node;
+    case "Quantifier":
+      return {
+        ...node,
+        formula: toCNF(node.formula),
+      };
+    case "UnaryExpression":
+      return node;
+    default:
+      return node;
+  }
+}
+
+// 9. Prevod na množinovú reprezentáciu
+export function flattenCNF(node: ASTNode): string[][] {
+  const clauses: string[][] = [];
+
+  function collectClauses(n: ASTNode) {
+    if (n.type === "BinaryExpression" && n.operator === "and") {
+      collectClauses(n.left);
+      collectClauses(n.right);
+    } else {
+      const literals: string[] = [];
+      const visited = new Set<string>();
+
+      function collectLiterals(ln: ASTNode) {
+        if (ln.type === "BinaryExpression" && ln.operator === "or") {
+          collectLiterals(ln.left);
+          collectLiterals(ln.right);
+        } else {
+          const litStr = stringifyAST(ln);
+          if (!visited.has(litStr)) {
+            literals.push(litStr);
+            visited.add(litStr);
+          }
+        }
+      }
+      collectLiterals(n);
+      clauses.push(literals);
+    }
+  }
+
+  collectClauses(node);
+  return clauses;
+}
+
+// --- UTIL FUNCTIONS (STRING INTERFACE) ---
+
+export function stringifyNegated(ast: ASTNode): string {
+  if (ast.type === "UnaryExpression" && ast.operator === "not") {
+    const inner = ast.operand;
+    const isSimple =
+      inner.type === "Predicate" ||
+      inner.type === "Function" ||
+      inner.type === "Constant" ||
+      inner.type === "Variable";
+    const innerStr = stringifyAST(inner);
+    if (!isSimple) {
+      return `¬(${innerStr})`;
+    }
+    return `¬${innerStr}`;
+  }
+  return stringifyAST(ast);
+}
+
 export function removeImpliesFromString(formula: string): string {
   const tokens = logicTokenize(formula);
   try {
@@ -442,7 +531,6 @@ export function removeImpliesFromString(formula: string): string {
   }
 }
 
-// Funkcia: Neguje stringovú formulu
 export function negateFormulaFromString(formula: string): string {
   const tokens = logicTokenize(formula);
   try {
@@ -454,7 +542,6 @@ export function negateFormulaFromString(formula: string): string {
   }
 }
 
-// Funkcia: Prevedie stringovú formulu do NNF
 export function toNNFFromString(formula: string): string {
   const tokens = logicTokenize(formula);
   try {
@@ -467,7 +554,6 @@ export function toNNFFromString(formula: string): string {
   }
 }
 
-// Funkcia: Premenuje viazané premenné (Standardization)
 export function renameQuantifierVariablesFromString(formula: string): string {
   const tokens = logicTokenize(formula);
   try {
@@ -479,7 +565,6 @@ export function renameQuantifierVariablesFromString(formula: string): string {
   }
 }
 
-// Funkcia: Prevedie stringovú formulu do PNF (Prenex Normal Form)
 export function toPNFFromString(formula: string): string {
   try {
     const tokens = logicTokenize(formula);
@@ -494,7 +579,6 @@ export function toPNFFromString(formula: string): string {
   }
 }
 
-// Funkcia: Odstráni existenčné kvantifikátory (Skolemizácia)
 export function skolemizeFromString(formula: string): string {
   try {
     const tokens = logicTokenize(formula);
@@ -505,6 +589,34 @@ export function skolemizeFromString(formula: string): string {
     const pnf = toPNF(standardized);
     const skolemized = skolemize(pnf);
     return stringifyAST(skolemized);
+  } catch {
+    return formula;
+  }
+}
+
+export function removeForallQuantifiersFromString(formula: string): string {
+  try {
+    const tokens = logicTokenize(formula);
+    const ast = parseStandardFormula(tokens);
+    const withoutForall = removeForallQuantifiers(ast);
+    return stringifyAST(withoutForall);
+  } catch {
+    return formula;
+  }
+}
+
+export function toCNFFromString(formula: string): string {
+  try {
+    const tokens = logicTokenize(formula);
+    const ast = parseStandardFormula(tokens);
+    const withoutImplies = replaceImplies(ast);
+    const nnf = toNNF(withoutImplies);
+    const standardized = renameQuantifierVariables(nnf);
+    const pnf = toPNF(standardized);
+    const skolemized = skolemize(pnf);
+    const withoutForall = removeForallQuantifiers(skolemized);
+    const cnf = toCNF(withoutForall);
+    return stringifyAST(cnf);
   } catch {
     return formula;
   }
