@@ -5,6 +5,7 @@ import { Logo } from "./components/TopBar/Logo.tsx";
 import { useLanguage } from "./translations/LanguageContext";
 import { InputForm } from "./components/InputBox/InputForm.tsx";
 import { StepsToSetNotation } from "./components/StepsToSetNotation.tsx";
+import { SLDResolutionView } from "./components/SLDResolutionView.tsx";
 import { type LogicToken } from "./utils/tokenizer";
 
 function Content() {
@@ -47,7 +48,10 @@ function Content() {
             setExternalError={setError}
           />
           {tokens && !error && (
-            <StepsToSetNotation tokens={tokens} onError={handleParserError} />
+            <>
+              <StepsToSetNotation tokens={tokens} onError={handleParserError} />
+              <SLDResolutionView tokens={tokens} />
+            </>
           )}
         </div>
       </div>
