@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { stringifyAST, parseStandardFormula } from "../utils/parserStandard";
+import { parsePrologFormula } from "../utils/parserProlog";
 import { decideLogicType, type LogicToken } from "../utils/tokenizer";
 import {
   negateFormula,
@@ -13,6 +14,7 @@ import {
   toCNF,
   flattenCNF,
 } from "../utils/transformSteps";
+import { prepareSLD } from "../utils/sldResolution";
 import { useLanguage } from "../translations/LanguageContext";
 
 interface StepsToSetNotationProps {
@@ -29,9 +31,9 @@ export const StepsToSetNotation = ({
   const results = useMemo(() => {
     try {
       const type = decideLogicType(tokens);
-      if (type !== "standard") return null;
+      if (type === "sekvent") return null;
 
-      const ast = parseStandardFormula(tokens);
+      const ast = type === "prolog" ? parsePrologFormula(tokens) : parseStandardFormula(tokens);
       const negated = negateFormula(ast);
       const withoutImplies = replaceImplies(negated);
       const nnf = toNNF(withoutImplies);
@@ -41,6 +43,7 @@ export const StepsToSetNotation = ({
       const removedForall = removeForallQuantifiers(skolemized);
       const cnf = toCNF(removedForall);
       const clauses = flattenCNF(cnf);
+      const { goals } = prepareSLD(clauses);
 
       return {
         parsed: stringifyAST(ast),
@@ -53,6 +56,7 @@ export const StepsToSetNotation = ({
         removedForall: stringifyAST(removedForall),
         cnf: stringifyAST(cnf),
         clauses: clauses,
+        goals: goals,
       };
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -158,6 +162,27 @@ export const StepsToSetNotation = ({
                 ))}
                 <span>{"}"}</span>
                 {idx < results.clauses.length - 1 && <span>, </span>}
+              </span>
+            ))}
+            <span>{"}"}</span>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="font-semibold text-red-600">{t("goals")}</h3>
+          <div className="mt-2 p-3 bg-red-50 rounded-lg font-mono text-sm border border-red-200 text-red-900">
+            <span>{"{"}</span>
+            {results.goals.map((clause, idx) => (
+              <span key={idx}>
+                <span>{"{"}</span>
+                {clause.map((lit, lIdx) => (
+                  <span key={lIdx}>
+                    <span>{lit}</span>
+                    {lIdx < clause.length - 1 && <span>, </span>}
+                  </span>
+                ))}
+                <span>{"}"}</span>
+                {idx < results.goals.length - 1 && <span>, </span>}
               </span>
             ))}
             <span>{"}"}</span>

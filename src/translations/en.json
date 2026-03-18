@@ -19,8 +19,15 @@
     "error_parentheses": "Problem with parentheses",
 
     "unexpected_combination_operators": "Unexpected combination of operators",
-    "error_expected_term": "Expected a term (variable, constant, or function) but found {value}"
-    
+    "error_expected_term": "Expected a term (variable, constant, or function) but found {value}",
+    "error_prolog_missing_dot": "Missing dot '.' at the end of the Prolog statement.",
+    "error_prolog_invalid_rule": "Invalid rule format (expected Head :- Body).",
+    "error_prolog_multiple_queries": "Only one query (?- ...) is allowed.",
+    "error_prolog_predicate_lowercase": "Prolog predicates must start with a lowercase letter: '{value}'",
+    "error_prolog_empty_statement": "Empty statement found before dot.",
+    "error_prolog_unexpected_token": "Unexpected token in Prolog: '{value}'",
+    "error_prolog_invalid_predicate": "Invalid predicate format.",
+    "error_prolog_invalid_term": "Invalid term format."
   },
   "transformation_steps": "Transformation steps",
   "parsed_formula": "Parsed formula",
