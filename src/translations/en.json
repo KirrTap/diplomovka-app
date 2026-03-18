@@ -6,18 +6,21 @@
   "errors": {
     "error_unknown_character": "Unknown character '{value}'",
     "quantifier_variable_missing": "Quantifier must be followed by a variable",
-    "error_parentheses": "Problem with parentheses",
-    "error_unexpected_comma": "Unexpected comma in arguments",
-    "error_empty_arguments": "Arguments cannot be empty",
-    "error_operator_inside_arguments": "Operator inside Predicate or Function arguments",
+    "error_invalid_quantifier_format": "Invalid quantifier format",
     "error_no_binary_connective": "Formula must contain at least one binary connective (∧, ∨, =>)",
-    "error_unexpected_variable": "Variable '{value}' cannot stand alone",
-    "error_unexpected_token": "Unexpected token: {value}",
-    "unexpected_combination_operators": "Unexpected combination of operators",
-    "error_expected_term": "Expected a term (variable, constant, or function) but found {value}",
     "error_missing_right_side": "Missing right side for operator {value}",
     "error_missing_left_side": "Missing left side for operator {value}",
-    "error_predicate_as_argument": "Predicate '{value}' cannot be an argument of another predicate or function"
+    "error_empty_arguments": "Arguments cannot be empty",
+    "error_unexpected_comma": "Unexpected comma",
+    "error_operator_inside_arguments": "Operator inside Predicate or Function arguments",
+    "error_predicate_as_argument": "Predicate '{value}' cannot be an argument of another predicate or function",
+    "error_unexpected_variable": "Variable '{value}' cannot stand alone",
+    "error_unexpected_token": "Unexpected token: {value}",
+    "error_parentheses": "Problem with parentheses",
+
+    "unexpected_combination_operators": "Unexpected combination of operators",
+    "error_expected_term": "Expected a term (variable, constant, or function) but found {value}"
+    
   },
   "transformation_steps": "Transformation steps",
   "parsed_formula": "Parsed formula",
@@ -29,5 +32,7 @@
   "skolem_formula": "Skolem Normal Form (SNF)",
   "removed_quantifiers": "Removed Universal Quantifiers",
   "cnf_formula": "Conjunctive Normal Form (CNF)",
-  "clause_set": "Clause Set (S)"
+  "clause_set": "Clause Set (S)",
+  "goals": "Goals (for SLD)",
+  "knowledge_base": "Knowledge Base (Rules and Facts)"
 }

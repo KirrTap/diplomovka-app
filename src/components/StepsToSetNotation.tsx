@@ -54,8 +54,12 @@ export const StepsToSetNotation = ({
         cnf: stringifyAST(cnf),
         clauses: clauses,
       };
-    } catch (e: any) {
-      onError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        onError(e.message);
+      } else {
+        onError(String(e));
+      }
       return null;
     }
   }, [tokens, onError]);

@@ -6,18 +6,22 @@
   "errors": {
     "error_unknown_character": "Neznámy znak '{value}'",
     "quantifier_variable_missing": "Za kvantifikátorom musí nasledovať premenná",
-    "error_parentheses": "Problém so zátvorkami",
-    "error_unexpected_comma": "Neočekávaná čiarka v argumentoch",
-    "error_empty_arguments": "Argumenty nemôžu byť prázdne",
-    "error_operator_inside_arguments": "Operátor v argumentoch predikátu alebo funkcie",
+    "error_invalid_quantifier_format": "Neplatný formát kvantifikátora.",
     "error_no_binary_connective": "Formula musí obsahovať aspoň jednu binárnu spojku (∧, ∨, =>)",
-    "error_unexpected_variable": "Premenná '{value}' nemôže vystupovať samostatne",
-    "error_unexpected_token": "Neočekávaný symbol: {value}",
-    "unexpected_combination_operators": "Neočekávaná kombinácia operátorov",
-    "error_expected_term": "Očakával sa term (premenná, konštanta alebo funkcia), ale našlo sa {value}",
     "error_missing_right_side": "Chýba pravá strana pre spojku {value}",
     "error_missing_left_side": "Chýba ľavá strana pre spojku {value}",
-    "error_predicate_as_argument": "Predikát '{value}' nemôže byť argumentom iného predikátu alebo funkcie"
+    "error_empty_arguments": "Argumenty nemôžu byť prázdne",
+    "error_unexpected_comma": "Neočakávaná čiarka",
+    "error_operator_inside_arguments": "Operátor v argumentoch predikátu alebo funkcie",
+    "error_predicate_as_argument": "Predikát '{value}' nemôže byť argumentom iného predikátu alebo funkcie",
+    "error_unexpected_variable": "Premenná '{value}' nemôže vystupovať samostatne",
+    "error_unexpected_token": "Neočekávaný symbol: {value}",
+    "error_parentheses": "Problém s závorkami",
+    
+    "unexpected_combination_operators": "Neočekávaná kombinácia operátorov",
+    "error_expected_term": "Očakával sa term (premenná, konštanta alebo funkcia), ale našlo sa {value}"
+    
+    
   },
   "transformation_steps": "Kroky transformácie",
   "parsed_formula": "Parsovaná formula",
@@ -29,5 +33,7 @@
   "skolem_formula": "Skolemovský normálny tvar (SNF)",
   "removed_quantifiers": "Vynechanie všeobecných kvantifikátorov",
   "cnf_formula": "Konjunktívna normálna forma (CNF)",
-  "clause_set": "Množina klauzúl (S)"
+  "clause_set": "Množina klauzúl (S)",
+  "goals": "Ciele (Goals pre SLD)",
+  "knowledge_base": "Báza znalostí (Pravidlá a fakty)"
 }

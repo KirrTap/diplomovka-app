@@ -108,8 +108,8 @@ describe("to NNF", () => {
     expect(toNNFFromString("¬(((∀x)P(x)) ∨ R(a))")).toBe("((∃x)¬P(x)) ∧ ¬R(a)");
   });
 
-  it("¬((∀x)P(x)) ∨ ((∃y) (Q(y) ∧ ¬R(b))))", () => {
-    expect(toNNFFromString("¬((∀x P(x)) ∨ (∃y (Q(y) ∧ ¬R(b))))")).toBe(
+  it("¬(((∀x)P(x)) ∨ ((∃y) (Q(y) ∧ ¬R(b))))", () => {
+    expect(toNNFFromString("¬(((∀x)P(x)) ∨ ((∃y) (Q(y) ∧ ¬R(b))))")).toBe(
       "((∃x)¬P(x)) ∧ ((∀y)(¬Q(y) ∨ R(b)))",
     );
   });

@@ -95,7 +95,7 @@ export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
             variable: node.variable,
             formula: toNNF(node.formula, true),
           };
-        } else {
+        } else if (node.symbol === "exists") {
           return {
             type: "Quantifier",
             symbol: "forall",
@@ -103,6 +103,7 @@ export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
             formula: toNNF(node.formula, true),
           };
         }
+        break;
       case "Predicate":
       case "Function":
       case "Constant":
