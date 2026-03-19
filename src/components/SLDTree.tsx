@@ -319,24 +319,26 @@ ${treeLatex}
     <div className="flex flex-col w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
       {/* Stepper bar inside the container header */}
       {treeData.nodes.length > 0 && (
-        <div className="flex justify-between items-center bg-white p-4 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <h3 className="font-bold text-lg text-gray-700">{t("sld_tree")}</h3>
-            <button 
-              onClick={copyTreeToLatex}
-              className="p-2 ml-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title="Copy Tree to LaTeX"
-            >
-              <FaCopy className="w-5 h-5" />
-            </button>
+        <div className="flex flex-wrap justify-between items-center bg-white p-4 border-b border-gray-200 gap-4">
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-3">
+              <h3 className="font-bold text-lg text-gray-700 whitespace-nowrap">{t("sld_tree")}</h3>
+              <button 
+                onClick={copyTreeToLatex}
+                className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title="Copy Tree to LaTeX"
+              >
+                <FaCopy className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex justify-center items-center">
+              <SearchStrategySwitcher
+                strategy={strategy}
+                setStrategy={onStrategyChange}
+              />
+            </div>
           </div>
-          <div className="flex justify-center items-center">
-            <SearchStrategySwitcher
-              strategy={strategy}
-              setStrategy={onStrategyChange}
-            />
-          </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3">
             <button 
               className="px-5 py-1.5 min-w-[120px] bg-gray-100 text-gray-600 rounded-md border border-gray-200 hover:bg-gray-200 hover:text-gray-800 font-bold disabled:opacity-50 transition-all text-sm"
               disabled={visibleSteps <= 1}
@@ -354,7 +356,7 @@ ${treeLatex}
             >
               {t("stepper.next")}
             </button>
-            <div className="w-[1px] h-8 bg-gray-300 mx-1"></div>
+            <div className="hidden sm:block w-[1px] h-8 bg-gray-300 mx-1"></div>
             <button 
               className="px-5 py-1.5 min-w-[140px] bg-green-600 text-white rounded-md border border-green-600 shadow-md hover:shadow-lg hover:bg-green-700 hover:border-green-700 font-bold transition-all text-sm"
               onClick={() => setVisibleSteps(treeData.nodes.length)}
