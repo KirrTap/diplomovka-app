@@ -1,5 +1,4 @@
 import React from "react";
-import { useLanguage } from "../../translations/LanguageContext";
 import type { SearchStrategy } from "./InputForm";
 
 interface SearchStrategySwitcherProps {
@@ -11,12 +10,8 @@ export const SearchStrategySwitcher: React.FC<SearchStrategySwitcherProps> = ({
   strategy,
   setStrategy,
 }) => {
-  const { t } = useLanguage();
   return (
     <div className="flex items-center gap-3">
-      <span className="text-base font-semibold text-gray-700 whitespace-nowrap">
-        {t("search_strategy")}
-      </span>
       <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
         <button
           onClick={() => setStrategy("dfs")}

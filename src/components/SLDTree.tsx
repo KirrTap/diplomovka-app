@@ -331,7 +331,7 @@ ${treeLatex}
                 <FaCopy className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center ml-4">
               <SearchStrategySwitcher
                 strategy={strategy}
                 setStrategy={onStrategyChange}
