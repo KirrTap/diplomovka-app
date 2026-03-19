@@ -6,6 +6,7 @@ import { useLanguage } from "./translations/LanguageContext";
 import { InputForm, type SearchStrategy } from "./components/InputBox/InputForm.tsx";
 import { StepsToSetNotation } from "./components/StepsToSetNotation.tsx";
 import { SLDResolutionView } from "./components/SLDResolutionView.tsx";
+import { DocumentationModal } from "./components/DocumentationModal.tsx";
 import { type LogicToken } from "./utils/tokenizer";
 
 function Content() {
@@ -16,10 +17,10 @@ function Content() {
     key: string;
     params: Record<string, string>;
   } | null>(null);
+  const [showDocs, setShowDocs] = useState(false);
 
-  const handleProcess = (newTokens: LogicToken[] | null, newStrategy: SearchStrategy) => {
+  const handleProcess = (newTokens: LogicToken[] | null) => {
     setTokens(newTokens);
-    setStrategy(newStrategy);
   };
 
   const handleParserError = (errorMessage: string) => {
@@ -46,7 +47,15 @@ function Content() {
               {t("title")}
             </h1>
           </div>
-          <LanguageDropdown />
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => setShowDocs(true)}
+              className="text-gray-600 hover:text-blue-600 font-medium transition-colors border-b-2 border-transparent hover:border-blue-600"
+            >
+              {t("documentation")}
+            </button>
+            <LanguageDropdown />
+          </div>
         </div>
         <div className="flex flex-col gap-8">
           <InputForm
@@ -63,9 +72,15 @@ function Content() {
       {/* Spodná časť (SLD strom a tabuľka). Rozdelenie do 60/40 je priamo v SLDResolutionView */}
       {tokens && !error && (
         <div className="mt-8 w-full pb-10">
-          <SLDResolutionView tokens={tokens} strategy={strategy} />
+          <SLDResolutionView 
+            tokens={tokens} 
+            strategy={strategy} 
+            onStrategyChange={setStrategy} 
+          />
         </div>
       )}
+
+      <DocumentationModal isOpen={showDocs} onClose={() => setShowDocs(false)} />
     </div>
   );
 }

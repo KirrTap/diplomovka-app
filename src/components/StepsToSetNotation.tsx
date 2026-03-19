@@ -36,8 +36,6 @@ export const StepsToSetNotation = ({
   const results = useMemo(() => {
     try {
       const type = decideLogicType(tokens);
-      if (type === "sekvent") return null;
-
       const ast = type === "prolog" ? parsePrologFormula(tokens) : parseStandardFormula(tokens);
       const negated = negateFormula(ast);
       const withoutImplies = replaceImplies(negated);

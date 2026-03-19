@@ -121,15 +121,6 @@ describe("logicTokenize", () => {
 });
 
 describe("decideLogicType", () => {
-  it("should detect sekvent", () => {
-    const tokens = logicTokenize("A⊢B");
-    expect(decideLogicType(tokens)).toBe("sekvent");
-  });
-
-  it("detect sekvent", () => {
-    const tokens = logicTokenize("P(x) ⊢ Q(y)");
-    expect(decideLogicType(tokens)).toBe("sekvent");
-  });
 
   it("detect prolog (query)", () => {
     const tokens = logicTokenize("?- P(a, b)");

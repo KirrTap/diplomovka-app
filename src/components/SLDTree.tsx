@@ -18,6 +18,7 @@ import dagre from "dagre";
 import { type SLDTreeData } from "../utils/sldResolutionDFS";
 import { predicateToString } from "../utils/unification";
 import { useLanguage } from "../translations/LanguageContext";
+import { SearchStrategySwitcher } from "./InputBox/SearchStrategySwitcher";
 
 interface SLDTreeProps {
   treeData: SLDTreeData;
@@ -25,6 +26,8 @@ interface SLDTreeProps {
   setVisibleSteps: React.Dispatch<React.SetStateAction<number>>;
   highlightedNodeId?: string | null;
   onNodeClick?: (nodeId: string) => void;
+  strategy: "dfs" | "bfs";
+  onStrategyChange: (strategy: "dfs" | "bfs") => void;
 }
 
 const nodeWidth = 200;
@@ -101,7 +104,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => 
   return { nodes: layoutedNodes, edges };
 };
 
-const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick }: SLDTreeProps) => {
+const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick, strategy, onStrategyChange }: SLDTreeProps) => {
   const { t } = useLanguage();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -210,17 +213,17 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
 \\begin{center}
 \\begin{forest}
   for tree={
-    font=\\sffamily\\small, % Mensie pismo pre uzly
+    font=\\sffamily\\small,
     child anchor=north,
     parent anchor=south,
     align=center,
-    text centered, % Explicitne centrovanie textu v uzle
-    text width=3.5cm, % Zvacsene na 3.5cm
-    minimum height=0.8cm, % Zmenšená jednotná výška
-    inner sep=4pt, % Pridany vnutorny priestor aby sa text nedotykal ramu
+    text centered,
+    text width=3.5cm,
+    minimum height=0.8cm,
+    inner sep=4pt,
     edge={->, thick},
-    l sep=12mm, % Trochu menšie vertikálne medzery
-    s sep=15mm, % Trochu menšie horizontálne medzery
+    l sep=12mm,
+    s sep=15mm,
     draw,
     rounded corners,
     fill=white
@@ -316,38 +319,44 @@ ${treeLatex}
     <div className="flex flex-col w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
       {/* Stepper bar inside the container header */}
       {treeData.nodes.length > 0 && (
-        <div className="flex justify-between items-center bg-white p-3 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-700">{t("sld_tree")}</h3>
+        <div className="flex justify-between items-center bg-white p-4 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <h3 className="font-bold text-lg text-gray-700">{t("sld_tree")}</h3>
             <button 
               onClick={copyTreeToLatex}
-              className="p-1.5 ml-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="p-2 ml-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="Copy Tree to LaTeX"
             >
-              <FaCopy className="w-4 h-4" />
+              <FaCopy className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex justify-center items-center">
+            <SearchStrategySwitcher
+              strategy={strategy}
+              setStrategy={onStrategyChange}
+            />
+          </div>
+          <div className="flex items-center gap-4">
             <button 
-              className="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-100 text-sm font-medium disabled:opacity-50 transition-colors shadow-sm"
+              className="px-5 py-1.5 min-w-[120px] bg-gray-100 text-gray-600 rounded-md border border-gray-200 hover:bg-gray-200 hover:text-gray-800 font-bold disabled:opacity-50 transition-all text-sm"
               disabled={visibleSteps <= 1}
               onClick={() => setVisibleSteps(v => Math.max(1, v - 1))}
             >
               {t("stepper.prev")}
             </button>
-            <span className="text-sm font-semibold whitespace-nowrap min-w-[80px] text-center text-gray-700">
+            <span className="text-sm font-semibold whitespace-nowrap min-w-[90px] text-center text-gray-700">
               {t("stepper.step")} {visibleSteps} / {treeData.nodes.length}
             </span>
             <button 
-              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium disabled:opacity-50 transition-colors shadow-sm"
+              className="px-5 py-1.5 min-w-[120px] bg-blue-600 text-white rounded-md border border-blue-600 shadow-sm hover:bg-blue-700 hover:border-blue-700 font-bold disabled:opacity-50 transition-all text-sm"
               disabled={visibleSteps >= treeData.nodes.length}
               onClick={() => setVisibleSteps(v => Math.min(treeData.nodes.length, v + 1))}
             >
               {t("stepper.next")}
             </button>
-            <div className="w-[1px] h-6 bg-gray-300 mx-1"></div>
+            <div className="w-[1px] h-8 bg-gray-300 mx-1"></div>
             <button 
-              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm font-medium transition-colors shadow-sm"
+              className="px-5 py-1.5 min-w-[140px] bg-green-600 text-white rounded-md border border-green-600 shadow-md hover:shadow-lg hover:bg-green-700 hover:border-green-700 font-bold transition-all text-sm"
               onClick={() => setVisibleSteps(treeData.nodes.length)}
             >
               {t("stepper.show_all")}
@@ -381,7 +390,7 @@ ${treeLatex}
   );
 };
 
-export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick }: SLDTreeProps) => {
+export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick, strategy, onStrategyChange }: SLDTreeProps) => {
   return (
     <ReactFlowProvider>
       <SLDTreeContent 
@@ -390,6 +399,8 @@ export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
         setVisibleSteps={setVisibleSteps} 
         highlightedNodeId={highlightedNodeId}
         onNodeClick={onNodeClick} 
+        strategy={strategy}
+        onStrategyChange={onStrategyChange}
       />
     </ReactFlowProvider>
   );

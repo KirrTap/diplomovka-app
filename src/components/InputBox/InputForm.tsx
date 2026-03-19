@@ -5,13 +5,12 @@ import { replaceShortcutsRealtime } from "../../utils/logicInputShortcuts";
 import { logicTokenize, type LogicToken } from "../../utils/tokenizer";
 import { ErrorMessage } from "./ErrorMessage";
 import { SymbolButton } from "./SymbolButton";
-import { SearchStrategySwitcher } from "./SearchStrategySwitcher";
 import { ProcessButton } from "./ProcessButton";
 
 export type SearchStrategy = "bfs" | "dfs";
 
 interface InputFormProps {
-  onProcess: (tokens: LogicToken[] | null, strategy: SearchStrategy) => void;
+  onProcess: (tokens: LogicToken[] | null) => void;
   externalError: { key: string; params: Record<string, string> } | null;
   setExternalError: (
     error: { key: string; params: Record<string, string> } | null,
@@ -26,14 +25,13 @@ export const InputForm = ({
   const { t } = useLanguage();
   const [inputValue, setInputValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [strategy, setStrategy] = useState<SearchStrategy>("dfs");
   const [showExamples, setShowExamples] = useState(false);
   const exampleBtnRef = useRef<HTMLButtonElement>(null);
   const handleExampleSelect = (exampleValue: string) => {
     setInputValue(exampleValue);
     setShowExamples(false);
     setExternalError(null);
-    onProcess(null, strategy);
+    onProcess(null);
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
@@ -60,7 +58,7 @@ export const InputForm = ({
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(replaceShortcutsRealtime(e.target.value));
     setExternalError(null);
-    onProcess(null, strategy);
+    onProcess(null);
   };
 
   const handleProcess = () => {
@@ -76,12 +74,12 @@ export const InputForm = ({
           value: unknownToken.value,
         },
       });
-      onProcess(null, strategy);
+      onProcess(null);
       return;
     }
 
     setExternalError(null);
-    onProcess(rawTokens, strategy);
+    onProcess(rawTokens);
   };
 
   return (
@@ -152,15 +150,10 @@ export const InputForm = ({
           <SymbolButton symbol="∨" onClick={handleInsertSymbol} />
           <SymbolButton symbol="=>" onClick={handleInsertSymbol} />
           <SymbolButton symbol="¬" onClick={handleInsertSymbol} />
-          <SymbolButton symbol="⊢" onClick={handleInsertSymbol} />
           <SymbolButton symbol="∀" onClick={handleInsertSymbol} />
           <SymbolButton symbol="∃" onClick={handleInsertSymbol} />
         </div>
         <div className="flex items-center gap-12 flex-wrap">
-          <SearchStrategySwitcher
-            strategy={strategy}
-            setStrategy={setStrategy}
-          />
           <ProcessButton onClick={handleProcess} />
         </div>
       </div>

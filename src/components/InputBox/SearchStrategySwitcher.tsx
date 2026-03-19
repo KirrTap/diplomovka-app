@@ -13,27 +13,27 @@ export const SearchStrategySwitcher: React.FC<SearchStrategySwitcherProps> = ({
 }) => {
   const { t } = useLanguage();
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-xs font-semibold text-gray-700 uppercase tracking-widest whitespace-nowrap">
+    <div className="flex items-center gap-3">
+      <span className="text-base font-semibold text-gray-700 whitespace-nowrap">
         {t("search_strategy")}
       </span>
-      <div className="flex bg-gray-100 rounded-full p-1 gap-1">
+      <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
         <button
           onClick={() => setStrategy("dfs")}
-          className={`px-6 py-2 text-sm font-semibold rounded-full transition-all duration-200 ${
+          className={`px-5 py-1.5 text-sm font-bold rounded-md transition-all ${
             strategy === "dfs"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "bg-gray-100 text-blue-600"
+              ? "bg-blue-600 text-white shadow-sm ring-1 ring-blue-600"
+              : "text-gray-600 hover:text-gray-800 hover:bg-gray-200/50"
           }`}
         >
           DFS
         </button>
         <button
           onClick={() => setStrategy("bfs")}
-          className={`px-6 py-2 text-sm font-semibold rounded-full transition-all duration-200 ${
+          className={`px-5 py-1.5 text-sm font-bold rounded-md transition-all ${
             strategy === "bfs"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "bg-gray-100 text-blue-600"
+              ? "bg-blue-600 text-white shadow-sm ring-1 ring-blue-600"
+              : "text-gray-600 hover:text-gray-800 hover:bg-gray-200/50"
           }`}
         >
           BFS

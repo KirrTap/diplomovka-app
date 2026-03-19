@@ -24,9 +24,10 @@ import { FaCopy } from "react-icons/fa";
 interface SLDResolutionViewProps {
   tokens: LogicToken[];
   strategy: "dfs" | "bfs";
+  onStrategyChange: (strategy: "dfs" | "bfs") => void;
 }
 
-export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) => {
+export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDResolutionViewProps) => {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleSteps, setVisibleSteps] = useState<number>(1);
@@ -35,8 +36,6 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
   const resolutionData = useMemo(() => {
     try {
       const type = decideLogicType(tokens);
-      if (type === "sekvent") return null;
-
       const ast = type === "prolog" ? parsePrologFormula(tokens) : parseStandardFormula(tokens);
       const negated = negateFormula(ast);
       const withoutImplies = replaceImplies(negated);
@@ -185,18 +184,20 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
           onNodeClick={(nodeId) => {
             setHighlightedNodeId(prev => prev === nodeId ? null : nodeId);
           }}
+          strategy={strategy}
+          onStrategyChange={onStrategyChange}
         />
       </div>
 
       <div className="w-[40%] flex flex-col bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-[757px]">
-        <div className="flex items-center mb-4 flex-shrink-0">
-          <h3 className="font-semibold text-gray-700">{t("resolution_trace")}</h3>
+        <div className="flex items-center gap-3 mb-4 flex-shrink-0">
+          <h3 className="font-bold text-lg text-gray-700">{t("resolution_trace")}</h3>
           <button 
             onClick={copyToLatex}
-            className="p-1.5 ml-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 ml-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             title="Copy to LaTeX"
           >
-            <FaCopy className="w-4 h-4" />
+            <FaCopy className="w-5 h-5" />
           </button>
         </div>
         <div className="flex-1 overflow-auto rounded-lg shadow-sm border border-gray-300">

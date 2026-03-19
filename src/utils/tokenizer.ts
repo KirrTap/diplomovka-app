@@ -3,7 +3,6 @@ export type LogicToken =
   | { type: "or" }
   | { type: "implies" }
   | { type: "not" }
-  | { type: "⊢" }
   | { type: "forall" }
   | { type: "exists" }
   | { type: "lparen" }
@@ -41,10 +40,6 @@ export function logicTokenize(rawInput: string): LogicToken[] {
         continue;
       case "¬":
         tokens.push({ type: "not" });
-        i++;
-        continue;
-      case "⊢":
-        tokens.push({ type: "⊢" });
         i++;
         continue;
       case "∀":
@@ -117,13 +112,9 @@ export function logicTokenize(rawInput: string): LogicToken[] {
 }
 export function decideLogicType(
   tokens: LogicToken[],
-): "sekvent" | "prolog" | "standard" {
-  let hasSequent = false;
+): "prolog" | "standard" {
   let hasProlog = false;
   for (const token of tokens) {
-    if (token.type === "⊢") {
-      hasSequent = true;
-    }
     if (
       token.type === "query" ||
       token.type === "rule" ||
@@ -132,7 +123,6 @@ export function decideLogicType(
       hasProlog = true;
     }
   }
-  if (hasSequent) return "sekvent";
   if (hasProlog) return "prolog";
   return "standard";
 }
