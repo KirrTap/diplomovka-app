@@ -59,30 +59,6 @@ const CustomSLDNode = ({ data }: { data: SLDNodeData }) => {
       {/* Hidden handles for edge connections */}
       <Handle type="target" position={Position.Top} style={{ background: 'transparent', border: 'none' }} />
       
-      {/* Node order badge */}
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "-10px",
-          transform: "translateY(-50%)",
-          background: "#e5e7eb",
-          border: "1px solid #9ca3af",
-          color: "#374151",
-          borderRadius: "50%",
-          width: "18px",
-          height: "18px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "9px",
-          fontWeight: "bold",
-          zIndex: 10,
-        }}
-      >
-        {data.step}
-      </div>
-
       <div className="text-center break-words" style={{ fontSize: '10px', lineHeight: '1.2' }} title={data.label}>{data.label}</div>
 
       <Handle type="source" position={Position.Bottom} style={{ background: 'transparent', border: 'none' }} />

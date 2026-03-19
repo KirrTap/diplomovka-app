@@ -62,6 +62,6 @@
   "clause": "Clause",
   "resolved_with": "Resolved",
   "tree_node": "Step",
-  "table_number": "Number",
+  "table_number": "Step",
   "unification": "Unification"
 }

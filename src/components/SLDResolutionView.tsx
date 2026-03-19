@@ -19,6 +19,7 @@ import { generateSLDTreeBFS } from "../utils/sldResolutionBFS";
 import { SLDTree } from "./SLDTree";
 import { useLanguage } from "../translations/LanguageContext";
 import { predicateToString } from "../utils/unification";
+import { FaCopy } from "react-icons/fa";
 
 interface SLDResolutionViewProps {
   tokens: LogicToken[];
@@ -88,6 +89,66 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
     }
   }, [highlightedNodeId, resolutionData, visibleSteps]);
 
+  const copyToLatex = () => {
+    if (!resolutionData || !resolutionData.treeData) return;
+
+    const { treeData, knowledgeBase, goals } = resolutionData;
+    const initialClauses = [...goals, ...knowledgeBase];
+    const visibleNodes = treeData.nodes.slice(0, visibleSteps);
+    const stepMap: Record<string, number> = {};
+    if (treeData.nodes.length > 0) {
+      stepMap[treeData.nodes[0].id] = 1;
+      treeData.nodes.slice(1).forEach((n, i) => {
+        stepMap[n.id] = initialClauses.length + i + 1;
+      });
+    }
+
+    let latex = `\\documentclass{article}
+\\usepackage{amssymb}
+\\usepackage[a4paper, margin=1cm]{geometry}
+\\usepackage{longtable}
+
+\\begin{document}
+
+\\begin{longtable}{|c|l|c|c|}
+\\hline
+\\textbf{Step} & \\textbf{Clause} & \\textbf{Res. with} & \\textbf{Unification} \\\\
+\\hline
+\\endhead
+`;
+
+    // Initial clauses
+    initialClauses.forEach((clause, idx) => {
+      const clauseLatex = clause.join(", ");
+      latex += `${idx + 1} & \\texttt{${clauseLatex}} & & \\\\\n\\hline\n`;
+    });
+
+    // Derived steps
+    visibleNodes.slice(1).forEach((node, idx) => {
+      let resolventText = "";
+      if (node.goals.length === 0) {
+        resolventText = "\\Box";
+      } else {
+        resolventText = node.goals.map(g => predicateToString(g)).join(", ");
+      }
+
+      const parentStep = node.parent ? stepMap[node.parent] : '?';
+      const kbStep = node.usedClauseIndex !== undefined ? goals.length + node.usedClauseIndex + 1 : '?';
+      const resolvedWithText = node.isFailLabel ? "" : `${parentStep},${kbStep}`;
+      
+      const edge = treeData.edges.find(e => e.target === node.id);
+      const unificationText = edge && edge.label ? edge.label : "";
+      const displayUnificationText = unificationText === "{}" ? "\\{ \\}" : unificationText.replace(/{/g, "\\{").replace(/}/g, "\\}");
+
+      latex += `${initialClauses.length + idx + 1} & \\texttt{${resolventText}} & ${resolvedWithText} & \\texttt{${displayUnificationText}} \\\\\n\\hline\n`;
+    });
+
+    latex += `\\end{longtable}
+
+\\end{document}`;
+    navigator.clipboard.writeText(latex);
+  };
+
   if (!resolutionData || !resolutionData.treeData || resolutionData.treeData.nodes.length === 0) return null;
 
   const { treeData, knowledgeBase, goals } = resolutionData;
@@ -128,13 +189,21 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
       </div>
 
       <div className="w-[40%] flex flex-col bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-[757px]">
-        <h3 className="font-semibold text-gray-700 mb-4 flex-shrink-0">{t("resolution_trace")}</h3>
+        <div className="flex justify-between items-center mb-4 flex-shrink-0">
+          <h3 className="font-semibold text-gray-700">{t("resolution_trace")}</h3>
+          <button 
+            onClick={copyToLatex}
+            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Copy to LaTeX"
+          >
+            <FaCopy className="w-4 h-4" />
+          </button>
+        </div>
         <div className="flex-1 overflow-auto rounded-lg shadow-sm border border-gray-300">
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 z-10 shadow-[0_1px_0_#d1d5db]">
               <tr>
                 <th className="bg-gray-100 border-b border-r border-gray-300 p-2 font-semibold text-gray-700 whitespace-nowrap w-12 text-center">{t("table_number")}</th>
-                <th className="bg-gray-100 border-b border-r border-gray-300 p-2 font-semibold text-gray-700 whitespace-nowrap w-12 text-center" title={t("tree_node")}>{t("tree_node")}</th>
                 <th className="bg-gray-100 border-b border-r border-gray-300 p-2 font-semibold text-gray-700">{t("clause")}</th>
                 <th className="bg-gray-100 border-b border-r border-gray-300 p-2 font-semibold text-gray-700 text-center whitespace-nowrap">{t("resolved_with")}</th>
                 <th className="bg-gray-100 border-b border-gray-300 p-2 font-semibold text-gray-700 text-center">{t("unification")}</th>
@@ -155,7 +224,6 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
                     onClick={() => nodeId && setHighlightedNodeId(prev => prev === nodeId ? null : nodeId)}
                   >
                     <td className={`border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/50' : 'bg-gray-50/50'}`}>{idx + 1}</td>
-                    <td className={`border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/30' : ''}`}>{isRootGoal ? "1" : ""}</td>
                     <td className="border-b border-r border-gray-300 p-2 font-mono text-sm break-words text-gray-800">
                       {formatWithBreaks(clause.join(", "))}
                     </td>
@@ -196,7 +264,6 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
                     onClick={() => setHighlightedNodeId(prev => prev === node.id ? null : node.id)}
                   >
                     <td className={`border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/50' : 'bg-blue-50/50'}`}>{initialClauses.length + idx + 1}</td>
-                    <td className={`border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/30' : 'bg-blue-50/20'}`}>{idx + 2}</td>
                     <td className={`border-b border-r border-gray-300 p-2 font-mono text-sm break-words ${isSpecial ? (node.isFailLabel ? 'text-red-600 font-bold' : 'text-black font-bold') : 'text-gray-800'}`}>
                       {formatWithBreaks(resolventText)}
                     </td>
