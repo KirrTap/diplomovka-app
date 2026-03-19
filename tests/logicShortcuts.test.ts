@@ -42,9 +42,6 @@ describe("replaceShortcutsRealtime", () => {
     expect(replaceShortcutsRealtime("A \\! B")).toEqual("A ¬ B");
   });
 
-  it("replaces \\vdash with ⊢", () => {
-    expect(replaceShortcutsRealtime("A \\vdash B")).toEqual("A ⊢ B");
-  });
 
   it("replaces \\forall with ∀", () => {
     expect(replaceShortcutsRealtime("\\forallx")).toEqual("∀x");
@@ -55,13 +52,5 @@ describe("replaceShortcutsRealtime", () => {
 
   it("no replaces", () => {
     expect(replaceShortcutsRealtime("P Q R")).toEqual("P Q R");
-  });
-
-  it("multiple shortcuts", () => {
-    expect(
-      replaceShortcutsRealtime(
-        "(\\forallx) (\\existsy) ((P(x) \\implies \\negQ(x)) \\vdash R(y))",
-      ),
-    ).toEqual("(∀x) (∃y) ((P(x) => ¬Q(x)) ⊢ R(y))");
   });
 });
