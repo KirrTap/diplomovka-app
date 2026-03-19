@@ -101,17 +101,17 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
         <SLDTree treeData={treeData} visibleSteps={visibleSteps} setVisibleSteps={setVisibleSteps} highlightedNodeId={highlightedNodeId} />
       </div>
 
-      <div className="w-[40%] bg-white p-6 rounded-xl shadow-lg border border-gray-200 overflow-y-auto h-[757px]">
-        <h3 className="font-semibold text-gray-700 mb-4">{t("resolution_trace")}</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse border border-gray-300 shadow-sm rounded-lg overflow-hidden">
-            <thead className="bg-gray-100">
+      <div className="w-[40%] flex flex-col bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-[757px]">
+        <h3 className="font-semibold text-gray-700 mb-4 flex-shrink-0">{t("resolution_trace")}</h3>
+        <div className="flex-1 overflow-auto rounded-lg shadow-sm border border-gray-300">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10 shadow-[0_1px_0_#d1d5db]">
               <tr>
-                <th className="border border-gray-300 p-2 font-semibold text-gray-700 whitespace-nowrap w-12 text-center">{t("stepper.step")}</th>
-                <th className="border border-gray-300 p-2 font-semibold text-gray-700 whitespace-nowrap w-12 text-center" title={t("tree_node")}>{t("tree_node")}</th>
-                <th className="border border-gray-300 p-2 font-semibold text-gray-700">{t("clause")}</th>
-                <th className="border border-gray-300 p-2 font-semibold text-gray-700 text-center whitespace-nowrap">{t("resolved_with")}</th>
-                <th className="border border-gray-300 p-2 font-semibold text-gray-700 text-center">{t("unification")}</th>
+                <th className="bg-gray-100 border-b border-r border-gray-300 p-2 font-semibold text-gray-700 whitespace-nowrap w-12 text-center">{t("table_number")}</th>
+                <th className="bg-gray-100 border-b border-r border-gray-300 p-2 font-semibold text-gray-700 whitespace-nowrap w-12 text-center" title={t("tree_node")}>{t("tree_node")}</th>
+                <th className="bg-gray-100 border-b border-r border-gray-300 p-2 font-semibold text-gray-700">{t("clause")}</th>
+                <th className="bg-gray-100 border-b border-r border-gray-300 p-2 font-semibold text-gray-700 text-center whitespace-nowrap">{t("resolved_with")}</th>
+                <th className="bg-gray-100 border-b border-gray-300 p-2 font-semibold text-gray-700 text-center">{t("unification")}</th>
               </tr>
             </thead>
             <tbody>
@@ -127,13 +127,13 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
                     className={`transition-colors ${nodeId ? 'cursor-pointer' : ''} ${isHighlighted ? 'bg-blue-200 hover:bg-blue-300' : 'hover:bg-gray-50'}`}
                     onClick={() => nodeId && setHighlightedNodeId(prev => prev === nodeId ? null : nodeId)}
                   >
-                    <td className={`border border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/50' : 'bg-gray-50/50'}`}>{idx + 1}</td>
-                    <td className={`border border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/30' : ''}`}>{isRootGoal ? "1" : "-"}</td>
-                    <td className="border border-gray-300 p-2 font-mono text-sm break-words text-gray-800">
+                    <td className={`border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/50' : 'bg-gray-50/50'}`}>{idx + 1}</td>
+                    <td className={`border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/30' : ''}`}>{isRootGoal ? "1" : ""}</td>
+                    <td className="border-b border-r border-gray-300 p-2 font-mono text-sm break-words text-gray-800">
                       {formatWithBreaks(clause.join(", "))}
                     </td>
-                    <td className="border border-gray-300 p-2 text-gray-800 font-medium text-center">-</td>
-                    <td className="border border-gray-300 p-2 text-gray-800 font-medium text-center">-</td>
+                    <td className="border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center"></td>
+                    <td className="border-b border-gray-300 p-2 text-gray-800 font-medium text-center"></td>
                   </tr>
                 );
               })}
@@ -152,10 +152,10 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
 
                 const parentStep = node.parent ? stepMap[node.parent] : '?';
                 const kbStep = node.usedClauseIndex !== undefined ? goals.length + node.usedClauseIndex + 1 : '?';
-                const resolvedWithText = node.isFailLabel ? "-" : `${parentStep},${kbStep}`;
+                const resolvedWithText = node.isFailLabel ? "" : `${parentStep},${kbStep}`;
                 
                 const edge = treeData.edges.find(e => e.target === node.id);
-                const unificationText = edge && edge.label ? edge.label : "-";
+                const unificationText = edge && edge.label ? edge.label : "";
                 // If the unification was exactly "{}", change it to "{ }" for readability
                 const displayUnificationText = unificationText === "{}" ? "{ }" : unificationText;
                 
@@ -167,13 +167,13 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
                     className={`transition-colors cursor-pointer ${isHighlighted ? 'bg-blue-200 hover:bg-blue-300' : 'bg-blue-50/30 hover:bg-blue-50'}`}
                     onClick={() => setHighlightedNodeId(prev => prev === node.id ? null : node.id)}
                   >
-                    <td className={`border border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/50' : 'bg-blue-50/50'}`}>{initialClauses.length + idx + 1}</td>
-                    <td className={`border border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/30' : 'bg-blue-50/20'}`}>{idx + 2}</td>
-                    <td className={`border border-gray-300 p-2 font-mono text-sm break-words ${isSpecial ? (node.isFailLabel ? 'text-red-600 font-bold' : 'text-black font-bold') : 'text-gray-800'}`}>
+                    <td className={`border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/50' : 'bg-blue-50/50'}`}>{initialClauses.length + idx + 1}</td>
+                    <td className={`border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/30' : 'bg-blue-50/20'}`}>{idx + 2}</td>
+                    <td className={`border-b border-r border-gray-300 p-2 font-mono text-sm break-words ${isSpecial ? (node.isFailLabel ? 'text-red-600 font-bold' : 'text-black font-bold') : 'text-gray-800'}`}>
                       {formatWithBreaks(resolventText)}
                     </td>
-                    <td className="border border-gray-300 p-2 text-gray-800 font-mono text-sm text-center whitespace-nowrap">{resolvedWithText}</td>
-                    <td className="border border-gray-300 p-2 text-gray-800 font-mono text-sm text-center break-words">{formatWithBreaks(displayUnificationText)}</td>
+                    <td className="border-b border-r border-gray-300 p-2 text-gray-800 font-mono text-sm text-center whitespace-nowrap">{resolvedWithText}</td>
+                    <td className="border-b border-gray-300 p-2 text-gray-800 font-mono text-sm text-center break-words">{formatWithBreaks(displayUnificationText)}</td>
                   </tr>
                 );
               })}

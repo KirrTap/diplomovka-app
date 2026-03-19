@@ -45,7 +45,7 @@
   "stepper": {
     "prev": "Predchádzajúci",
     "next": "Nasledujúci",
-    "step": "Číslo",
+    "step": "Krok",
     "show_all": "Zobraz všetko"
   },
   "sld_resolution_tree": "SLD strom rezolúcie",
@@ -62,5 +62,6 @@
   "clause": "Klauzula",
   "resolved_with": "Rezolvované",
   "tree_node": "Krok",
+  "table_number": "Číslo",
   "unification": "Unifikácia"
 }
