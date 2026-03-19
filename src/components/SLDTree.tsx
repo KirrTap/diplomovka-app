@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { FaCopy } from "react-icons/fa";
 import {
   ReactFlow,
   useNodesState,
@@ -107,6 +108,132 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
   const isLocked = false; // Povolené približovanie a posúvanie
   const { fitView } = useReactFlow();
 
+  const copyTreeToLatex = () => {
+    if (!treeData || treeData.nodes.length === 0) return;
+
+    // Convert the tree into a representation suitable for LaTeX forest
+    const nodesMap = new Map(treeData.nodes.map(n => [n.id, n]));
+    const childrenMap = new Map<string, typeof treeData.nodes>();
+    const edgesMap = new Map(treeData.edges.map(e => [`${e.source}->${e.target}`, e]));
+
+    // Find root (node with no incoming edges)
+    const hasIncoming = new Set(treeData.edges.map(e => e.target));
+    const rootNodes = treeData.nodes.filter(n => !hasIncoming.has(n.id));
+    if (rootNodes.length === 0) return;
+    const root = rootNodes[0];
+
+    // Build children map
+    treeData.edges.forEach(e => {
+      const children = childrenMap.get(e.source) || [];
+      const targetNode = nodesMap.get(e.target);
+      if (targetNode) {
+        children.push(targetNode);
+        childrenMap.set(e.source, children);
+      }
+    });
+
+    const formatLatexLabel = (goals: any[]) => {
+      if (goals.length === 0) return "\\Box";
+      // To allow text wrapping inside math mode in TikZ/Forest, we can wrap each predicate 
+      // in its own math mode. Instead of using commas natively, we'll wrap it in a tabular 
+      // or similar environment if we want very strict multi-line breaks, but standard text
+      // separation using spaces helps LaTeX break it.
+      // We will replace spaces with line breaks (\\) natively for VERY long goals if needed,
+      // but simply separating them by ", " and using text width should work.
+      // To ensure that even a SINGLE long predicate wraps, we can't easily break inside math mode.
+      // But we will allow breaking at the commas.
+      return goals.map(g => `$${predicateToString(g).replace(/[~¬]/g, '\\neg ').replace(/_/g, '\\_')}$`).join(",\\\\");
+    };
+
+    const buildTreeString = (nodeId: string, edgeToThisNode?: any): string => {
+      const node = nodesMap.get(nodeId);
+      if (!node) return "";
+      
+      const isVisible = treeData.nodes.findIndex(n => n.id === nodeId) < visibleSteps;
+      if (!isVisible) return "";
+
+      // We don't wrap the entire label in $...$ anymore, because formatLatexLabel does it per-predicate.
+      // This allows LaTeX's text width and centering algorithms to break lines between predicates!
+      const label = formatLatexLabel(node.goals);
+      let options: string[] = [];
+
+      // Removed colors entirely for LaTeX export, keep standard styling
+      // If needed, specific styling can be added back, but unified look is preferred.
+
+      if (edgeToThisNode) {
+        const edgeLabel = edgeToThisNode.label || "";
+        const displayEdgeLabel = edgeLabel === "{}" ? "\\{\\}" : edgeLabel.replace(/{/g, "\\{").replace(/}/g, "\\}").replace(/_/g, '\\_');
+        if (displayEdgeLabel) {
+          options.push(`edge label={node[midway, right, font=\\scriptsize, fill=white, inner sep=2pt]{$${displayEdgeLabel}$}}`);
+        }
+      }
+
+      const optionsStr = options.length > 0 ? `, ${options.join(', ')}` : '';
+      
+      // Enclose label in {} so that commas in goals do not break forest options parser!
+      let result = `[{${label}}${optionsStr}`;
+
+      const children = childrenMap.get(nodeId) || [];
+      const visibleChildren = children.filter(c => treeData.nodes.findIndex(n => n.id === c.id) < visibleSteps);
+
+      // We no longer sort by X coordinate because dagre's internal X coordinate 
+      // might be right-to-left. Instead, we use the original order from treeData (DFS/BFS generation order), 
+      // which exactly matches the 1-to-1 top-down and left-to-right table order.
+      visibleChildren.sort((a, b) => {
+        const idxA = treeData.nodes.findIndex(n => n.id === a.id);
+        const idxB = treeData.nodes.findIndex(n => n.id === b.id);
+        return idxA - idxB;
+      });
+
+      visibleChildren.forEach(child => {
+        const edge = edgesMap.get(`${nodeId}->${child.id}`);
+        const childStr = buildTreeString(child.id, edge);
+        if (childStr) {
+          result += `\n  ${childStr.split('\n').join('\n  ')}`;
+        }
+      });
+
+      result += `]`;
+      return result;
+    };
+
+    const treeLatex = buildTreeString(root.id);
+
+    const latex = `\\documentclass{article}
+\\usepackage{xcolor}
+\\usepackage{forest}
+\\usepackage{amssymb}
+\\usepackage[a4paper, margin=1cm]{geometry}
+
+\\begin{document}
+
+\\begin{center}
+\\begin{forest}
+  for tree={
+    font=\\sffamily\\small, % Mensie pismo pre uzly
+    child anchor=north,
+    parent anchor=south,
+    align=center,
+    text centered, % Explicitne centrovanie textu v uzle
+    text width=3.5cm, % Zvacsene na 3.5cm
+    minimum height=0.8cm, % Zmenšená jednotná výška
+    inner sep=4pt, % Pridany vnutorny priestor aby sa text nedotykal ramu
+    edge={->, thick},
+    l sep=12mm, % Trochu menšie vertikálne medzery
+    s sep=15mm, % Trochu menšie horizontálne medzery
+    draw,
+    rounded corners,
+    fill=white
+  }
+${treeLatex}
+\\end{forest}
+\\end{center}
+
+\\end{document}`;
+
+    navigator.clipboard.writeText(latex);
+  };
+
   useEffect(() => {
     if (!treeData || treeData.nodes.length === 0) return;
 
@@ -190,7 +317,16 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
       {/* Stepper bar inside the container header */}
       {treeData.nodes.length > 0 && (
         <div className="flex justify-between items-center bg-white p-3 border-b border-gray-200">
-          <h3 className="font-semibold text-gray-700">{t("sld_tree")}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-gray-700">{t("sld_tree")}</h3>
+            <button 
+              onClick={copyTreeToLatex}
+              className="p-1.5 ml-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Copy Tree to LaTeX"
+            >
+              <FaCopy className="w-4 h-4" />
+            </button>
+          </div>
           <div className="flex items-center gap-3">
             <button 
               className="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-100 text-sm font-medium disabled:opacity-50 transition-colors shadow-sm"

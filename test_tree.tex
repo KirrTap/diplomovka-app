@@ -1,0 +1,29 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{forest}
+\usepackage{amssymb}
+\usepackage[a4paper, margin=1cm]{geometry}
+
+\begin{document}
+
+\begin{center}
+\begin{forest}
+  for tree={
+    font=\sffamily,
+    child anchor=north,
+    parent anchor=south,
+    align=center,
+    edge={->, thick},
+    l sep=15mm,
+    s sep=20mm,
+    draw,
+    rounded corners,
+    fill=white
+  }
+[{$A, B$}, fill=green!10
+  [{$C$}, edge label={node[midway, right, font=\scriptsize, fill=white, inner sep=2pt]{$X/Y$}}]
+]
+\end{forest}
+\end{center}
+
+\end{document}

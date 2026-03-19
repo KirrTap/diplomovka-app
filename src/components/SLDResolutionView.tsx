@@ -112,15 +112,15 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
 
 \\begin{longtable}{|c|l|c|c|}
 \\hline
-\\textbf{Step} & \\textbf{Clause} & \\textbf{Res. with} & \\textbf{Unification} \\\\
+\\textbf{Step} & \\textbf{Clause} & \\textbf{Resolved} & \\textbf{Unification} \\\\
 \\hline
 \\endhead
 `;
 
     // Initial clauses
     initialClauses.forEach((clause, idx) => {
-      const clauseLatex = clause.join(", ");
-      latex += `${idx + 1} & \\texttt{${clauseLatex}} & & \\\\\n\\hline\n`;
+      const clauseLatex = clause.join(", ").replace(/[~¬]/g, '\\neg ').replace(/_/g, '\\_');
+      latex += `${idx + 1} & $${clauseLatex}$ & & \\\\\n\\hline\n`;
     });
 
     // Derived steps
@@ -129,7 +129,7 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
       if (node.goals.length === 0) {
         resolventText = "\\Box";
       } else {
-        resolventText = node.goals.map(g => predicateToString(g)).join(", ");
+        resolventText = node.goals.map(g => predicateToString(g)).join(", ").replace(/[~¬]/g, '\\neg ').replace(/_/g, '\\_');
       }
 
       const parentStep = node.parent ? stepMap[node.parent] : '?';
@@ -138,9 +138,9 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
       
       const edge = treeData.edges.find(e => e.target === node.id);
       const unificationText = edge && edge.label ? edge.label : "";
-      const displayUnificationText = unificationText === "{}" ? "\\{ \\}" : unificationText.replace(/{/g, "\\{").replace(/}/g, "\\}");
+      const displayUnificationText = unificationText === "{}" ? "\\{\\}" : unificationText.replace(/{/g, "\\{").replace(/}/g, "\\}").replace(/_/g, '\\_');
 
-      latex += `${initialClauses.length + idx + 1} & \\texttt{${resolventText}} & ${resolvedWithText} & \\texttt{${displayUnificationText}} \\\\\n\\hline\n`;
+      latex += `${initialClauses.length + idx + 1} & $${resolventText}$ & ${resolvedWithText} & $${displayUnificationText}$ \\\\\n\\hline\n`;
     });
 
     latex += `\\end{longtable}
