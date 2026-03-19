@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   ReactFlow,
   useNodesState,
   useEdgesState,
   Background,
   Controls,
-  Panel,
   Handle,
   Position,
   ReactFlowProvider,
@@ -21,6 +20,8 @@ import { useLanguage } from "../translations/LanguageContext";
 
 interface SLDTreeProps {
   treeData: SLDTreeData;
+  visibleSteps: number;
+  setVisibleSteps: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const nodeWidth = 200;
@@ -116,26 +117,23 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => 
   return { nodes: layoutedNodes, edges };
 };
 
-const SLDTreeContent = ({ treeData }: SLDTreeProps) => {
+const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps }: SLDTreeProps) => {
   const { t } = useLanguage();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [visibleSteps, setVisibleSteps] = useState<number>(1);
   const isLocked = false; // Povolené približovanie a posúvanie
   const { fitView } = useReactFlow();
-
-  useEffect(() => {
-    // Reset steps to 1 whenever new tree data comes in
-    setVisibleSteps(1);
-  }, [treeData]);
 
   useEffect(() => {
     if (!treeData || treeData.nodes.length === 0) return;
 
     const initialNodes: Node[] = treeData.nodes.map((node, index) => {
-      const goalsText = node.goals.length === 0 
-        ? "□ (Success)" 
-        : node.goals.map(g => predicateToString(g)).join(', ');
+      let goalsText = "";
+      if (node.goals.length === 0) {
+        goalsText = "□";
+      } else {
+        goalsText = node.goals.map(g => predicateToString(g)).join(', ');
+      }
         
       let bg = '#ffffff';
       let border = '#d1d5db';
@@ -144,7 +142,7 @@ const SLDTreeContent = ({ treeData }: SLDTreeProps) => {
       if (node.status === "success") {
         bg = '#dcfce7';
         border = '#22c55e';
-        color = '#14532d';
+        color = '#14532d'; // Dark green text in the tree
       } else if (node.status === "failure") {
         bg = '#fee2e2';
         border = '#ef4444';
@@ -189,7 +187,7 @@ const SLDTreeContent = ({ treeData }: SLDTreeProps) => {
 
     setNodes(visibleNodes);
     setEdges(visibleEdges);
-  }, [treeData, visibleSteps, setNodes, setEdges]);
+  }, [treeData, visibleSteps, setNodes, setEdges, t]);
 
   useEffect(() => {
     // Vždy po zmene kroku počkáme kým sa vykreslí dom a vycentrujeme pohľad
@@ -200,43 +198,23 @@ const SLDTreeContent = ({ treeData }: SLDTreeProps) => {
   }, [visibleSteps, fitView]);
 
   return (
-    <div className="w-full h-[700px] border border-gray-200 rounded-lg overflow-hidden bg-white mt-6 relative">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        fitView
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        panOnDrag={!isLocked}
-        zoomOnScroll={!isLocked}
-        zoomOnPinch={!isLocked}
-        zoomOnDoubleClick={!isLocked}
-      >
-        <Background />
-        <Controls showInteractive={false} />
-        
-        <Panel position="top-left" className="bg-white p-2 rounded shadow-md text-sm font-semibold">
-          {t("sld_resolution_tree")}
-        </Panel>
-
-        {treeData.nodes.length > 0 && (
-          <Panel position="top-right" className="bg-white p-2 rounded shadow-md flex items-center gap-3">
+    <div className="flex flex-col w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      {/* Stepper bar inside the container header */}
+      {treeData.nodes.length > 0 && (
+        <div className="flex justify-end items-center bg-gray-50 p-3 border-b border-gray-200">
+          <div className="flex items-center gap-3">
             <button 
-              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm font-medium disabled:opacity-50 transition-colors"
+              className="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-100 text-sm font-medium disabled:opacity-50 transition-colors shadow-sm"
               disabled={visibleSteps <= 1}
               onClick={() => setVisibleSteps(v => Math.max(1, v - 1))}
             >
               {t("stepper.prev")}
             </button>
-            <span className="text-sm font-semibold whitespace-nowrap min-w-[80px] text-center">
+            <span className="text-sm font-semibold whitespace-nowrap min-w-[80px] text-center text-gray-700">
               {t("stepper.step")} {visibleSteps} / {treeData.nodes.length}
             </span>
             <button 
-              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium disabled:opacity-50 transition-colors"
+              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium disabled:opacity-50 transition-colors shadow-sm"
               disabled={visibleSteps >= treeData.nodes.length}
               onClick={() => setVisibleSteps(v => Math.min(treeData.nodes.length, v + 1))}
             >
@@ -244,22 +222,43 @@ const SLDTreeContent = ({ treeData }: SLDTreeProps) => {
             </button>
             <div className="w-[1px] h-6 bg-gray-300 mx-1"></div>
             <button 
-              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm font-medium transition-colors"
+              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm font-medium transition-colors shadow-sm"
               onClick={() => setVisibleSteps(treeData.nodes.length)}
             >
               {t("stepper.show_all")}
             </button>
-          </Panel>
-        )}
-      </ReactFlow>
+          </div>
+        </div>
+      )}
+
+      <div className="w-full h-[700px] relative bg-white">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          fitView
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          panOnDrag={!isLocked}
+          zoomOnScroll={!isLocked}
+          zoomOnPinch={!isLocked}
+          zoomOnDoubleClick={!isLocked}
+        >
+          <Background />
+          <Controls showInteractive={false} />
+        </ReactFlow>
+      </div>
     </div>
   );
 };
 
-export const SLDTree = ({ treeData }: SLDTreeProps) => {
+export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps }: SLDTreeProps) => {
   return (
     <ReactFlowProvider>
-      <SLDTreeContent treeData={treeData} />
+      <SLDTreeContent treeData={treeData} visibleSteps={visibleSteps} setVisibleSteps={setVisibleSteps} />
     </ReactFlowProvider>
   );
 };

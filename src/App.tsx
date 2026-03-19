@@ -37,6 +37,7 @@ function Content() {
 
   return (
     <div className="min-h-screen p-6">
+      {/* Horná časť aplikácie (hlavička, formulár, kroky) zostáva vycentrovaná na 80% */}
       <div className="w-[80%] mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-1">
@@ -54,13 +55,17 @@ function Content() {
             setExternalError={setError}
           />
           {tokens && !error && (
-            <>
-              <StepsToSetNotation tokens={tokens} onError={handleParserError} />
-              <SLDResolutionView tokens={tokens} strategy={strategy} />
-            </>
+            <StepsToSetNotation tokens={tokens} onError={handleParserError} />
           )}
         </div>
       </div>
+
+      {/* Spodná časť (SLD strom a tabuľka). Rozdelenie do 60/40 je priamo v SLDResolutionView */}
+      {tokens && !error && (
+        <div className="mt-8 w-full pb-10">
+          <SLDResolutionView tokens={tokens} strategy={strategy} />
+        </div>
+      )}
     </div>
   );
 }

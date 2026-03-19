@@ -98,7 +98,7 @@ export const InputForm = ({
             style={{ minWidth: 120 }}
             onClick={() => setShowExamples((v) => !v)}
           >
-            <span className="flex-1 text-left">Príklady</span>
+            <span className="flex-1 text-left">{t("examples")}</span>
             <svg
               className="w-4 h-4 ml-2"
               fill="none"
@@ -119,12 +119,12 @@ export const InputForm = ({
             >
               {EXAMPLES.map((ex) => (
                 <button
-                  key={ex.label}
+                  key={ex.labelKey}
                   className="block w-full text-left px-4 py-2 hover:bg-blue-50 text-gray-800"
                   onClick={() => handleExampleSelect(ex.value)}
                   type="button"
                 >
-                  {ex.label}
+                  {t(ex.labelKey)}
                 </button>
               ))}
             </div>

@@ -48,5 +48,17 @@
     "step": "Step",
     "show_all": "Show All"
   },
-  "sld_resolution_tree": "SLD Resolution Tree"
+  "sld_resolution_tree": "SLD Resolution Tree",
+  "examples": "Examples",
+  "example_1": "Example 1",
+  "example_2": "Example 2",
+  "example_3": "Example 3",
+  "example_4": "Example 4",
+  "fail": "Fail",
+  "success": "□ (Success)",
+  "resolution_trace": "Resolution Trace",
+  "resolvent": "Resolvent",
+  "clause": "Clause",
+  "resolved_with": "Resolved",
+  "unification": "Unification"
 }

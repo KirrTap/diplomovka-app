@@ -79,6 +79,7 @@ export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: stri
           id: childId,
           goals: nextGoals,
           parent: node.id,
+          usedClauseIndex: kbIdx,
           status: nextGoals.length === 0 ? "success" : "open"
         };
         
@@ -97,7 +98,7 @@ export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: stri
            }
         });
         
-        const substStr = substStrings.length > 0 ? `{ ${substStrings.join(", ")} }` : "{}";
+        const substStr = substStrings.length > 0 ? `{ ${substStrings.join(", ")} }` : "{ }";
         
         edges.push({
           id: `e-${node.id}-${childId}`,

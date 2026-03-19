@@ -48,5 +48,17 @@
     "step": "Krok",
     "show_all": "Zobraz všetko"
   },
-  "sld_resolution_tree": "SLD strom rezolúcie"
+  "sld_resolution_tree": "SLD strom rezolúcie",
+  "examples": "Príklady",
+  "example_1": "Príklad 1",
+  "example_2": "Príklad 2",
+  "example_3": "Príklad 3",
+  "example_4": "Príklad 4",
+  "fail": "Zlyhanie",
+  "success": "□ (Úspech)",
+  "resolution_trace": "Priebeh rezolúcie",
+  "resolvent": "Rezolventa",
+  "clause": "Klauzula",
+  "resolved_with": "Rezolvované",
+  "unification": "Unifikácia"
 }

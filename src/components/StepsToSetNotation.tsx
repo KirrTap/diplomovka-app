@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { stringifyAST, parseStandardFormula } from "../utils/parserStandard";
 import { parsePrologFormula } from "../utils/parserProlog";
 import { decideLogicType, type LogicToken } from "../utils/tokenizer";
@@ -14,7 +14,6 @@ import {
   toCNF,
   flattenCNF,
 } from "../utils/transformSteps";
-import { prepareSLD } from "../utils/sldResolution";
 import { useLanguage } from "../translations/LanguageContext";
 
 interface StepsToSetNotationProps {
@@ -27,6 +26,12 @@ export const StepsToSetNotation = ({
   onError,
 }: StepsToSetNotationProps) => {
   const { t } = useLanguage();
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Collapse when processing new tokens
+  useEffect(() => {
+    setIsExpanded(false);
+  }, [tokens]);
 
   const results = useMemo(() => {
     try {
@@ -43,7 +48,6 @@ export const StepsToSetNotation = ({
       const removedForall = removeForallQuantifiers(skolemized);
       const cnf = toCNF(removedForall);
       const clauses = flattenCNF(cnf);
-      const { goals } = prepareSLD(clauses);
 
       return {
         parsed: stringifyAST(ast),
@@ -56,7 +60,6 @@ export const StepsToSetNotation = ({
         removedForall: stringifyAST(removedForall),
         cnf: stringifyAST(cnf),
         clauses: clauses,
-        goals: goals,
       };
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -72,123 +75,129 @@ export const StepsToSetNotation = ({
 
   return (
     <div className="mt-6 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
-      <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-        {t("transformation_steps")}
-      </h2>
+      <button 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={`w-full flex justify-between items-center text-left text-lg font-semibold text-gray-700 ${isExpanded ? 'mb-4' : ''} transition-colors focus:outline-none`}
+      >
+        <span>{t("transformation_steps")}</span>
+        <svg 
+          className={`w-6 h-6 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
-      <div className="space-y-4">
-        <div>
-          <h3 className="font-semibold text-blue-600">{t("parsed_formula")}</h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
-            {results.parsed}
+      {isExpanded && (
+        <div className="relative border-l-2 border-blue-200 ml-4 pl-6 space-y-6 mt-6 pb-2">
+          
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">{t("parsed_formula")}</h3>
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
+              {results.parsed}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="font-semibold text-blue-600">
-            {t("negated_formula")}
-          </h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
-            {results.negated}
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">
+              {t("negated_formula")}
+            </h3>
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
+              {results.negated}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="font-semibold text-blue-600">
-            {t("removed_implies")}
-          </h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
-            {results.noImplies}
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">
+              {t("removed_implies")}
+            </h3>
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
+              {results.noImplies}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="font-semibold text-blue-600">{t("nnf_formula")}</h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
-            {results.nnf}
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">{t("nnf_formula")}</h3>
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
+              {results.nnf}
+            </div>
           </div>
-        </div>
-        <div>
-          <h3 className="font-semibold text-blue-600">
-            {t("nnf_unique_vars")}
-          </h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
-            {results.nnfUniqueVars}
-          </div>
-        </div>
 
-        <div>
-          <h3 className="font-semibold text-blue-600">{t("pnf_formula")}</h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
-            {results.pnf}
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">
+              {t("nnf_unique_vars")}
+            </h3>
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
+              {results.nnfUniqueVars}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="font-semibold text-blue-600">{t("skolem_formula")}</h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
-            {results.skolemized}
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">{t("pnf_formula")}</h3>
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
+              {results.pnf}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="font-semibold text-blue-600">
-            {t("removed_quantifiers")}
-          </h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
-            {results.removedForall}
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">{t("skolem_formula")}</h3>
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
+              {results.skolemized}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="font-semibold text-blue-600">{t("cnf_formula")}</h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200">
-            {results.cnf}
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">
+              {t("removed_quantifiers")}
+            </h3>
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
+              {results.removedForall}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="font-semibold text-blue-600">{t("clause_set")}</h3>
-          <div className="mt-2 p-3 bg-gray-50 rounded-lg font-mono text-sm border border-gray-200 text-gray-900">
-            <span>{"{"}</span>
-            {results.clauses.map((clause, idx) => (
-              <span key={idx}>
-                <span>{"{"}</span>
-                {clause.map((lit, lIdx) => (
-                  <span key={lIdx}>
-                    <span>{lit}</span>
-                    {lIdx < clause.length - 1 && <span>, </span>}
-                  </span>
-                ))}
-                <span>{"}"}</span>
-                {idx < results.clauses.length - 1 && <span>, </span>}
-              </span>
-            ))}
-            <span>{"}"}</span>
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">{t("cnf_formula")}</h3>
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
+              {results.cnf}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="font-semibold text-red-600">{t("goals")}</h3>
-          <div className="mt-2 p-3 bg-red-50 rounded-lg font-mono text-sm border border-red-200 text-red-900">
-            <span>{"{"}</span>
-            {results.goals.map((clause, idx) => (
-              <span key={idx}>
-                <span>{"{"}</span>
-                {clause.map((lit, lIdx) => (
-                  <span key={lIdx}>
-                    <span>{lit}</span>
-                    {lIdx < clause.length - 1 && <span>, </span>}
-                  </span>
-                ))}
-                <span>{"}"}</span>
-                {idx < results.goals.length - 1 && <span>, </span>}
-              </span>
-            ))}
-            <span>{"}"}</span>
+          <div className="relative">
+            <div className="absolute w-3 h-3 bg-green-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <h3 className="font-semibold text-gray-800 text-sm">{t("clause_set")}</h3>
+            <div className="mt-2 p-3 bg-green-50/50 rounded-lg font-mono text-sm border border-green-200 shadow-sm text-gray-800 overflow-x-auto">
+              <span>{"{"}</span>
+              {results.clauses.map((clause, idx) => (
+                <span key={idx}>
+                  <span>{"{"}</span>
+                  {clause.map((lit, lIdx) => (
+                    <span key={lIdx}>
+                      <span>{lit}</span>
+                      {lIdx < clause.length - 1 && <span>, </span>}
+                    </span>
+                  ))}
+                  <span>{"}"}</span>
+                  {idx < results.clauses.length - 1 && <span>, </span>}
+                </span>
+              ))}
+              <span>{"}"}</span>
+            </div>
           </div>
+
         </div>
-      </div>
+      )}
     </div>
   );
 };

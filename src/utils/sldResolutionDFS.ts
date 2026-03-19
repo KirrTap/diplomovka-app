@@ -5,8 +5,10 @@ export interface SLDNode {
   goals: Predicate[];     // Current resolvents (negative literals)
   parent?: string;        // Parent node ID
   usedRule?: string;      // The rule from KB used to get here
+  usedClauseIndex?: number; // Index of the KB clause used
   subst?: Record<string, string>; // Substitutions made in this step
   status: "open" | "success" | "failure";
+  isFailLabel?: boolean;  // Specifies if this node is just a "Fail" termination node
 }
 
 export interface SLDEdge {
@@ -115,6 +117,7 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
           id: childId,
           goals: nextGoals,
           parent: node.id,
+          usedClauseIndex: kbIdx,
           status: nextGoals.length === 0 ? "success" : "open"
         };
         
@@ -136,7 +139,7 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
            }
         });
         
-        const substStr = substStrings.length > 0 ? `{ ${substStrings.join(", ")} }` : "{}";
+        const substStr = substStrings.length > 0 ? `{ ${substStrings.join(", ")} }` : "{ }";
         
         edges.push({
           id: `e-${node.id}-${childId}`,
@@ -151,7 +154,7 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
     }
     
     if (!hasChildren && node.goals.length > 0) {
-      node.status = "failure"; // Dead end
+      node.status = "failure";
     }
   }
 
