@@ -189,11 +189,11 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
       </div>
 
       <div className="w-[40%] flex flex-col bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-[757px]">
-        <div className="flex justify-between items-center mb-4 flex-shrink-0">
+        <div className="flex items-center mb-4 flex-shrink-0">
           <h3 className="font-semibold text-gray-700">{t("resolution_trace")}</h3>
           <button 
             onClick={copyToLatex}
-            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-1.5 ml-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             title="Copy to LaTeX"
           >
             <FaCopy className="w-4 h-4" />

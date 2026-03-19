@@ -107,6 +107,10 @@ export function parseLiteralToPredicate(literal: string): Predicate {
 }
 
 export function unifyTerms(t1: Term, t2: Term, subst: Substitution): boolean {
+  if (t1.type === "Variable" && t2.type === "Variable") {
+    // If both are variables, prefer binding the clause variable (t2) to the goal variable (t1)
+    return unifyVariable(t2.name, t1, subst);
+  }
   if (t1.type === "Variable") {
     return unifyVariable(t1.name, t2, subst);
   }
@@ -146,6 +150,9 @@ function unifyVariable(varName: string, term: Term, subst: Substitution): boolea
   }
   
   // Occurs check (skip for simplicity unless needed, standard Prolog omits it)
+  if (term.type === "Variable" && term.name === varName) {
+    return true; // X = X is trivially true
+  }
   
   subst.set(varName, term);
   return true;
