@@ -45,10 +45,11 @@
   "stepper": {
     "prev": "Prev",
     "next": "Next",
-    "step": "Step",
+    "step": "Number",
     "show_all": "Show All"
   },
   "sld_resolution_tree": "SLD Resolution Tree",
+  "sld_tree": "SLD Tree",
   "examples": "Examples",
   "example_1": "Example 1",
   "example_2": "Example 2",
@@ -60,5 +61,6 @@
   "resolvent": "Resolvent",
   "clause": "Clause",
   "resolved_with": "Resolved",
+  "tree_node": "Step",
   "unification": "Unification"
 }

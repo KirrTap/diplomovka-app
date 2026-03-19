@@ -136,7 +136,7 @@ export const InputForm = ({
         value={inputValue}
         onChange={handleTextareaChange}
         spellCheck={false}
-        className="w-full h-32 min-h-36 p-4 border border-gray-300 rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 mb-4 text-l"
+        className="w-full h-48 min-h-[192px] p-4 border border-gray-300 rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 mb-4 text-lg"
       />
       {externalError && (
         <ErrorMessage

@@ -22,6 +22,7 @@ interface SLDTreeProps {
   treeData: SLDTreeData;
   visibleSteps: number;
   setVisibleSteps: React.Dispatch<React.SetStateAction<number>>;
+  highlightedNodeId?: string | null;
 }
 
 const nodeWidth = 200;
@@ -33,6 +34,7 @@ interface SLDNodeData {
   color: string;
   step: number;
   label: string;
+  isHighlighted?: boolean;
 }
 
 const CustomSLDNode = ({ data }: { data: SLDNodeData }) => {
@@ -40,13 +42,17 @@ const CustomSLDNode = ({ data }: { data: SLDNodeData }) => {
     <div
       style={{
         background: data.bg,
-        border: `2px solid ${data.border}`,
+        border: `2px solid ${data.isHighlighted ? '#3b82f6' : data.border}`,
         borderRadius: "8px",
         padding: "10px",
         fontWeight: "bold",
         color: data.color,
         width: nodeWidth,
         position: "relative",
+        boxShadow: data.isHighlighted ? "0 0 0 4px rgba(59, 130, 246, 0.4)" : "none",
+        transform: data.isHighlighted ? "scale(1.05)" : "scale(1)",
+        transition: "all 0.2s ease-in-out",
+        zIndex: data.isHighlighted ? 100 : 1,
       }}
     >
       {/* Hidden handles for edge connections */}
@@ -117,7 +123,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => 
   return { nodes: layoutedNodes, edges };
 };
 
-const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps }: SLDTreeProps) => {
+const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId }: SLDTreeProps) => {
   const { t } = useLanguage();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -156,7 +162,8 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps }: SLDTreeProp
           bg,
           border,
           color,
-          step: index + 1
+          step: index + 1,
+          isHighlighted: node.id === highlightedNodeId
         },
         position: { x: 0, y: 0 },
         type: "sldNode",
@@ -172,6 +179,10 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps }: SLDTreeProp
       labelStyle: { fill: '#374151', fontWeight: 500 },
       labelBgStyle: { fill: '#f3f4f6', stroke: '#d1d5db' },
       animated: true,
+      style: {
+        stroke: (edge.source === highlightedNodeId || edge.target === highlightedNodeId) ? '#3b82f6' : '#b1b1b7',
+        strokeWidth: (edge.source === highlightedNodeId || edge.target === highlightedNodeId) ? 3 : 1,
+      },
     }));
 
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
@@ -187,7 +198,7 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps }: SLDTreeProp
 
     setNodes(visibleNodes);
     setEdges(visibleEdges);
-  }, [treeData, visibleSteps, setNodes, setEdges, t]);
+  }, [treeData, visibleSteps, setNodes, setEdges, t, highlightedNodeId]);
 
   useEffect(() => {
     // Vždy po zmene kroku počkáme kým sa vykreslí dom a vycentrujeme pohľad
@@ -201,7 +212,8 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps }: SLDTreeProp
     <div className="flex flex-col w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
       {/* Stepper bar inside the container header */}
       {treeData.nodes.length > 0 && (
-        <div className="flex justify-end items-center bg-gray-50 p-3 border-b border-gray-200">
+        <div className="flex justify-between items-center bg-white p-3 border-b border-gray-200">
+          <h3 className="font-semibold text-gray-700">{t("sld_tree")}</h3>
           <div className="flex items-center gap-3">
             <button 
               className="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-100 text-sm font-medium disabled:opacity-50 transition-colors shadow-sm"
@@ -255,10 +267,10 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps }: SLDTreeProp
   );
 };
 
-export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps }: SLDTreeProps) => {
+export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId }: SLDTreeProps) => {
   return (
     <ReactFlowProvider>
-      <SLDTreeContent treeData={treeData} visibleSteps={visibleSteps} setVisibleSteps={setVisibleSteps} />
+      <SLDTreeContent treeData={treeData} visibleSteps={visibleSteps} setVisibleSteps={setVisibleSteps} highlightedNodeId={highlightedNodeId} />
     </ReactFlowProvider>
   );
 };

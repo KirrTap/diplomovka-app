@@ -29,6 +29,7 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleSteps, setVisibleSteps] = useState<number>(1);
+  const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
 
   const resolutionData = useMemo(() => {
     try {
@@ -61,6 +62,7 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
 
   useEffect(() => {
     setVisibleSteps(1); // Reset steps when formula changes
+    setHighlightedNodeId(null); // Reset highlighted node
     if (resolutionData && resolutionData.treeData && resolutionData.treeData.nodes.length > 0) {
       setTimeout(() => {
         containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -84,19 +86,29 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
     });
   }
 
+  const formatWithBreaks = (text: string) => {
+    return text.split(",").map((part, i, arr) => (
+      <span key={i}>
+        {part}
+        {i < arr.length - 1 && <>,&#8203;</>}
+      </span>
+    ));
+  };
+
   return (
     <div ref={containerRef} className="flex w-full gap-4 scroll-mt-6">
       <div className="w-[60%] flex flex-col">
-        <SLDTree treeData={treeData} visibleSteps={visibleSteps} setVisibleSteps={setVisibleSteps} />
+        <SLDTree treeData={treeData} visibleSteps={visibleSteps} setVisibleSteps={setVisibleSteps} highlightedNodeId={highlightedNodeId} />
       </div>
 
-      <div className="w-[40%] bg-white p-6 rounded-xl shadow-lg border border-gray-200 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 100px)' }}>
+      <div className="w-[40%] bg-white p-6 rounded-xl shadow-lg border border-gray-200 overflow-y-auto h-[757px]">
         <h3 className="font-semibold text-gray-700 mb-4">{t("resolution_trace")}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse border border-gray-300 shadow-sm rounded-lg overflow-hidden">
             <thead className="bg-gray-100">
               <tr>
                 <th className="border border-gray-300 p-2 font-semibold text-gray-700 whitespace-nowrap w-12 text-center">{t("stepper.step")}</th>
+                <th className="border border-gray-300 p-2 font-semibold text-gray-700 whitespace-nowrap w-12 text-center" title={t("tree_node")}>{t("tree_node")}</th>
                 <th className="border border-gray-300 p-2 font-semibold text-gray-700">{t("clause")}</th>
                 <th className="border border-gray-300 p-2 font-semibold text-gray-700 text-center whitespace-nowrap">{t("resolved_with")}</th>
                 <th className="border border-gray-300 p-2 font-semibold text-gray-700 text-center">{t("unification")}</th>
@@ -104,16 +116,27 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
             </thead>
             <tbody>
               {/* Zobrazenie počiatočných klauzúl (najprv ciele, potom báza znalostí) */}
-              {initialClauses.map((clause, idx) => (
-                <tr key={`init-${idx}`} className="hover:bg-gray-50 transition-colors">
-                  <td className="border border-gray-300 p-2 text-gray-600 font-medium text-center bg-gray-50/50">{idx + 1}</td>
-                  <td className="border border-gray-300 p-2 font-mono text-sm break-all text-gray-800">
-                    {clause.join(", ")}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-gray-400 font-medium text-center">-</td>
-                  <td className="border border-gray-300 p-2 text-gray-400 font-medium text-center">-</td>
-                </tr>
-              ))}
+              {initialClauses.map((clause, idx) => {
+                const isRootGoal = idx === 0;
+                const nodeId = isRootGoal && treeData.nodes.length > 0 ? treeData.nodes[0].id : null;
+                const isHighlighted = highlightedNodeId && nodeId === highlightedNodeId;
+                
+                return (
+                  <tr 
+                    key={`init-${idx}`} 
+                    className={`transition-colors ${nodeId ? 'cursor-pointer' : ''} ${isHighlighted ? 'bg-blue-200 hover:bg-blue-300' : 'hover:bg-gray-50'}`}
+                    onClick={() => nodeId && setHighlightedNodeId(prev => prev === nodeId ? null : nodeId)}
+                  >
+                    <td className={`border border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/50' : 'bg-gray-50/50'}`}>{idx + 1}</td>
+                    <td className={`border border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/30' : ''}`}>{isRootGoal ? "1" : "-"}</td>
+                    <td className="border border-gray-300 p-2 font-mono text-sm break-words text-gray-800">
+                      {formatWithBreaks(clause.join(", "))}
+                    </td>
+                    <td className="border border-gray-300 p-2 text-gray-800 font-medium text-center">-</td>
+                    <td className="border border-gray-300 p-2 text-gray-800 font-medium text-center">-</td>
+                  </tr>
+                );
+              })}
               
               {/* Zobrazenie rezolventov odvodených zo stromu (odrezaná hlava = cieľová klauzula, ktorá je už vypísaná ako #1) */}
               {visibleNodes.slice(1).map((node, idx) => {
@@ -135,15 +158,22 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
                 const unificationText = edge && edge.label ? edge.label : "-";
                 // If the unification was exactly "{}", change it to "{ }" for readability
                 const displayUnificationText = unificationText === "{}" ? "{ }" : unificationText;
+                
+                const isHighlighted = highlightedNodeId === node.id;
 
                 return (
-                  <tr key={node.id} className="bg-blue-50/30 hover:bg-blue-50 transition-colors">
-                    <td className="border border-gray-300 p-2 text-blue-600 font-medium text-center bg-blue-50/50">{initialClauses.length + idx + 1}</td>
-                    <td className={`border border-gray-300 p-2 font-mono text-sm break-all ${isSpecial ? (node.isFailLabel ? 'text-red-600 font-bold' : 'text-black font-bold') : 'text-gray-800'}`}>
-                      {resolventText}
+                  <tr 
+                    key={node.id} 
+                    className={`transition-colors cursor-pointer ${isHighlighted ? 'bg-blue-200 hover:bg-blue-300' : 'bg-blue-50/30 hover:bg-blue-50'}`}
+                    onClick={() => setHighlightedNodeId(prev => prev === node.id ? null : node.id)}
+                  >
+                    <td className={`border border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/50' : 'bg-blue-50/50'}`}>{initialClauses.length + idx + 1}</td>
+                    <td className={`border border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/30' : 'bg-blue-50/20'}`}>{idx + 2}</td>
+                    <td className={`border border-gray-300 p-2 font-mono text-sm break-words ${isSpecial ? (node.isFailLabel ? 'text-red-600 font-bold' : 'text-black font-bold') : 'text-gray-800'}`}>
+                      {formatWithBreaks(resolventText)}
                     </td>
-                    <td className="border border-gray-300 p-2 text-gray-600 font-mono text-sm text-center whitespace-nowrap">{resolvedWithText}</td>
-                    <td className="border border-gray-300 p-2 text-gray-800 font-mono text-sm text-center break-all">{displayUnificationText}</td>
+                    <td className="border border-gray-300 p-2 text-gray-800 font-mono text-sm text-center whitespace-nowrap">{resolvedWithText}</td>
+                    <td className="border border-gray-300 p-2 text-gray-800 font-mono text-sm text-center break-words">{formatWithBreaks(displayUnificationText)}</td>
                   </tr>
                 );
               })}

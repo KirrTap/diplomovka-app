@@ -45,10 +45,11 @@
   "stepper": {
     "prev": "Predchádzajúci",
     "next": "Nasledujúci",
-    "step": "Krok",
+    "step": "Číslo",
     "show_all": "Zobraz všetko"
   },
   "sld_resolution_tree": "SLD strom rezolúcie",
+  "sld_tree": "SLD Strom",
   "examples": "Príklady",
   "example_1": "Príklad 1",
   "example_2": "Príklad 2",
@@ -60,5 +61,6 @@
   "resolvent": "Rezolventa",
   "clause": "Klauzula",
   "resolved_with": "Rezolvované",
+  "tree_node": "Krok",
   "unification": "Unifikácia"
 }
