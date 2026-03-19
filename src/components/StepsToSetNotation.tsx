@@ -175,9 +175,10 @@ export const StepsToSetNotation = ({
           </div>
 
           <div className="relative">
-            <div className="absolute w-3 h-3 bg-green-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
+            <div className="absolute -left-[33px] top-3 h-[calc(100%+20px)] w-4 bg-white"></div>
+            <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[31px] top-1.5 ring-4 ring-white"></div>
             <h3 className="font-semibold text-gray-800 text-sm">{t("clause_set")}</h3>
-            <div className="mt-2 p-3 bg-green-50/50 rounded-lg font-mono text-sm border border-green-200 shadow-sm text-gray-800 overflow-x-auto">
+            <div className="mt-2 p-3 bg-gray-50/80 rounded-lg font-mono text-sm border border-gray-200 shadow-sm text-gray-700 overflow-x-auto">
               <span>{"{"}</span>
               {results.clauses.map((clause, idx) => (
                 <span key={idx}>

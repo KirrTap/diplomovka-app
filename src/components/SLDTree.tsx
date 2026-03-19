@@ -23,6 +23,7 @@ interface SLDTreeProps {
   visibleSteps: number;
   setVisibleSteps: React.Dispatch<React.SetStateAction<number>>;
   highlightedNodeId?: string | null;
+  onNodeClick?: (nodeId: string) => void;
 }
 
 const nodeWidth = 200;
@@ -123,7 +124,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => 
   return { nodes: layoutedNodes, edges };
 };
 
-const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId }: SLDTreeProps) => {
+const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick }: SLDTreeProps) => {
   const { t } = useLanguage();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -250,6 +251,7 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
           nodeTypes={nodeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeClick={(_, node) => onNodeClick && onNodeClick(node.id)}
           fitView
           nodesDraggable={false}
           nodesConnectable={false}
@@ -267,10 +269,16 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
   );
 };
 
-export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId }: SLDTreeProps) => {
+export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick }: SLDTreeProps) => {
   return (
     <ReactFlowProvider>
-      <SLDTreeContent treeData={treeData} visibleSteps={visibleSteps} setVisibleSteps={setVisibleSteps} highlightedNodeId={highlightedNodeId} />
+      <SLDTreeContent 
+        treeData={treeData} 
+        visibleSteps={visibleSteps} 
+        setVisibleSteps={setVisibleSteps} 
+        highlightedNodeId={highlightedNodeId}
+        onNodeClick={onNodeClick} 
+      />
     </ReactFlowProvider>
   );
 };

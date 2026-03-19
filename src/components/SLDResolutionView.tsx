@@ -70,6 +70,24 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
     }
   }, [resolutionData]);
 
+  useEffect(() => {
+    if (highlightedNodeId) {
+      // Scroll table row into view
+      const row = document.getElementById(`row-${highlightedNodeId}`);
+      if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Ensure node is visible in tree
+      if (resolutionData?.treeData) {
+        const nodeIndex = resolutionData.treeData.nodes.findIndex(n => n.id === highlightedNodeId);
+        if (nodeIndex !== -1 && nodeIndex + 1 > visibleSteps) {
+          setVisibleSteps(nodeIndex + 1);
+        }
+      }
+    }
+  }, [highlightedNodeId, resolutionData, visibleSteps]);
+
   if (!resolutionData || !resolutionData.treeData || resolutionData.treeData.nodes.length === 0) return null;
 
   const { treeData, knowledgeBase, goals } = resolutionData;
@@ -98,7 +116,15 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
   return (
     <div ref={containerRef} className="flex w-full gap-4 scroll-mt-6">
       <div className="w-[60%] flex flex-col">
-        <SLDTree treeData={treeData} visibleSteps={visibleSteps} setVisibleSteps={setVisibleSteps} highlightedNodeId={highlightedNodeId} />
+        <SLDTree 
+          treeData={treeData} 
+          visibleSteps={visibleSteps} 
+          setVisibleSteps={setVisibleSteps} 
+          highlightedNodeId={highlightedNodeId}
+          onNodeClick={(nodeId) => {
+            setHighlightedNodeId(prev => prev === nodeId ? null : nodeId);
+          }}
+        />
       </div>
 
       <div className="w-[40%] flex flex-col bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-[757px]">
@@ -123,6 +149,7 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
                 
                 return (
                   <tr 
+                    id={nodeId ? `row-${nodeId}` : undefined}
                     key={`init-${idx}`} 
                     className={`transition-colors ${nodeId ? 'cursor-pointer' : ''} ${isHighlighted ? 'bg-blue-200 hover:bg-blue-300' : 'hover:bg-gray-50'}`}
                     onClick={() => nodeId && setHighlightedNodeId(prev => prev === nodeId ? null : nodeId)}
@@ -163,6 +190,7 @@ export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) 
 
                 return (
                   <tr 
+                    id={`row-${node.id}`}
                     key={node.id} 
                     className={`transition-colors cursor-pointer ${isHighlighted ? 'bg-blue-200 hover:bg-blue-300' : 'bg-blue-50/30 hover:bg-blue-50'}`}
                     onClick={() => setHighlightedNodeId(prev => prev === node.id ? null : node.id)}

@@ -39,7 +39,7 @@
   "skolem_formula": "Skolem Normal Form (SNF)",
   "removed_quantifiers": "Removed Universal Quantifiers",
   "cnf_formula": "Conjunctive Normal Form (CNF)",
-  "clause_set": "Clause Set (S)",
+  "clause_set": "Clause Set",
   "goals": "Goals (for SLD)",
   "knowledge_base": "Knowledge Base (Rules and Facts)",
   "stepper": {

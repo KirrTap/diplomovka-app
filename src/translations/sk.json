@@ -39,7 +39,7 @@
   "skolem_formula": "Skolemovský normálny tvar (SNF)",
   "removed_quantifiers": "Vynechanie všeobecných kvantifikátorov",
   "cnf_formula": "Konjunktívna normálna forma (CNF)",
-  "clause_set": "Množina klauzúl (S)",
+  "clause_set": "Množina klauzúl",
   "goals": "Ciele (Goals pre SLD)",
   "knowledge_base": "Báza znalostí (Pravidlá a fakty)",
   "stepper": {
