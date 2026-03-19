@@ -3,7 +3,7 @@ import "./index.css";
 import { LanguageDropdown } from "./components/TopBar/LanguageDropdown.tsx";
 import { Logo } from "./components/TopBar/Logo.tsx";
 import { useLanguage } from "./translations/LanguageContext";
-import { InputForm } from "./components/InputBox/InputForm.tsx";
+import { InputForm, type SearchStrategy } from "./components/InputBox/InputForm.tsx";
 import { StepsToSetNotation } from "./components/StepsToSetNotation.tsx";
 import { SLDResolutionView } from "./components/SLDResolutionView.tsx";
 import { type LogicToken } from "./utils/tokenizer";
@@ -11,10 +11,16 @@ import { type LogicToken } from "./utils/tokenizer";
 function Content() {
   const { t } = useLanguage();
   const [tokens, setTokens] = useState<LogicToken[] | null>(null);
+  const [strategy, setStrategy] = useState<SearchStrategy>("dfs");
   const [error, setError] = useState<{
     key: string;
     params: Record<string, string>;
   } | null>(null);
+
+  const handleProcess = (newTokens: LogicToken[] | null, newStrategy: SearchStrategy) => {
+    setTokens(newTokens);
+    setStrategy(newStrategy);
+  };
 
   const handleParserError = (errorMessage: string) => {
     if (errorMessage.includes("|")) {
@@ -43,14 +49,14 @@ function Content() {
         </div>
         <div className="flex flex-col gap-8">
           <InputForm
-            onProcess={setTokens}
+            onProcess={handleProcess}
             externalError={error}
             setExternalError={setError}
           />
           {tokens && !error && (
             <>
               <StepsToSetNotation tokens={tokens} onError={handleParserError} />
-              <SLDResolutionView tokens={tokens} />
+              <SLDResolutionView tokens={tokens} strategy={strategy} />
             </>
           )}
         </div>

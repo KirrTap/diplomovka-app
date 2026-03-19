@@ -14,14 +14,17 @@ import {
   flattenCNF,
 } from "../utils/transformSteps";
 import { prepareSLD } from "../utils/sldResolution";
+import { generateSLDTreeDFS } from "../utils/sldResolutionDFS";
+import { generateSLDTreeBFS } from "../utils/sldResolutionBFS";
 import { SLDTree } from "./SLDTree";
 
 interface SLDResolutionViewProps {
   tokens: LogicToken[];
+  strategy: "dfs" | "bfs";
 }
 
-export const SLDResolutionView = ({ tokens }: SLDResolutionViewProps) => {
-  const goals = useMemo(() => {
+export const SLDResolutionView = ({ tokens, strategy }: SLDResolutionViewProps) => {
+  const treeData = useMemo(() => {
     try {
       const type = decideLogicType(tokens);
       if (type === "sekvent") return null;
@@ -38,20 +41,21 @@ export const SLDResolutionView = ({ tokens }: SLDResolutionViewProps) => {
       const clauses = flattenCNF(cnf);
       
       const sld = prepareSLD(clauses);
-      return sld.goals;
+      if (strategy === "bfs") {
+        return generateSLDTreeBFS(sld.knowledgeBase, sld.goals);
+      } else {
+        return generateSLDTreeDFS(sld.knowledgeBase, sld.goals);
+      }
     } catch {
       return null;
     }
-  }, [tokens]);
+  }, [tokens, strategy]);
 
-  if (!goals || goals.length === 0) return null;
+  if (!treeData || treeData.nodes.length === 0) return null;
 
   return (
     <div className="mt-8 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-      <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-        SLD Resolution Tree
-      </h2>
-      <SLDTree goals={goals} />
+      <SLDTree treeData={treeData} />
     </div>
   );
 };

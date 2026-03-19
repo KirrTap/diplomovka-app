@@ -41,5 +41,12 @@
   "cnf_formula": "Conjunctive Normal Form (CNF)",
   "clause_set": "Clause Set (S)",
   "goals": "Goals (for SLD)",
-  "knowledge_base": "Knowledge Base (Rules and Facts)"
+  "knowledge_base": "Knowledge Base (Rules and Facts)",
+  "stepper": {
+    "prev": "Prev",
+    "next": "Next",
+    "step": "Step",
+    "show_all": "Show All"
+  },
+  "sld_resolution_tree": "SLD Resolution Tree"
 }

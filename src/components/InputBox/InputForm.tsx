@@ -11,7 +11,7 @@ import { ProcessButton } from "./ProcessButton";
 export type SearchStrategy = "bfs" | "dfs";
 
 interface InputFormProps {
-  onProcess: (tokens: LogicToken[] | null) => void;
+  onProcess: (tokens: LogicToken[] | null, strategy: SearchStrategy) => void;
   externalError: { key: string; params: Record<string, string> } | null;
   setExternalError: (
     error: { key: string; params: Record<string, string> } | null,
@@ -26,14 +26,14 @@ export const InputForm = ({
   const { t } = useLanguage();
   const [inputValue, setInputValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [strategy, setStrategy] = useState<SearchStrategy>("bfs");
+  const [strategy, setStrategy] = useState<SearchStrategy>("dfs");
   const [showExamples, setShowExamples] = useState(false);
   const exampleBtnRef = useRef<HTMLButtonElement>(null);
   const handleExampleSelect = (exampleValue: string) => {
     setInputValue(exampleValue);
     setShowExamples(false);
     setExternalError(null);
-    onProcess(null);
+    onProcess(null, strategy);
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
@@ -60,7 +60,7 @@ export const InputForm = ({
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(replaceShortcutsRealtime(e.target.value));
     setExternalError(null);
-    onProcess(null);
+    onProcess(null, strategy);
   };
 
   const handleProcess = () => {
@@ -76,12 +76,12 @@ export const InputForm = ({
           value: unknownToken.value,
         },
       });
-      onProcess(null);
+      onProcess(null, strategy);
       return;
     }
 
     setExternalError(null);
-    onProcess(rawTokens);
+    onProcess(rawTokens, strategy);
   };
 
   return (
@@ -115,12 +115,7 @@ export const InputForm = ({
           </button>
           {showExamples && (
             <div
-              className="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 left-0"
-              style={{
-                minWidth: exampleBtnRef.current
-                  ? exampleBtnRef.current.offsetWidth
-                  : 140,
-              }}
+              className="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 left-0 min-w-[140px]"
             >
               {EXAMPLES.map((ex) => (
                 <button

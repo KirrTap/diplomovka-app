@@ -41,5 +41,12 @@
   "cnf_formula": "Konjunktívna normálna forma (CNF)",
   "clause_set": "Množina klauzúl (S)",
   "goals": "Ciele (Goals pre SLD)",
-  "knowledge_base": "Báza znalostí (Pravidlá a fakty)"
+  "knowledge_base": "Báza znalostí (Pravidlá a fakty)",
+  "stepper": {
+    "prev": "Predchádzajúci",
+    "next": "Nasledujúci",
+    "step": "Krok",
+    "show_all": "Zobraz všetko"
+  },
+  "sld_resolution_tree": "SLD strom rezolúcie"
 }
