@@ -221,11 +221,11 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
                   <tr 
                     id={nodeId ? `row-${nodeId}` : undefined}
                     key={`init-${idx}`} 
-                    className={`transition-colors ${nodeId ? 'cursor-pointer' : ''} ${isHighlighted ? 'bg-blue-200 hover:bg-blue-300' : 'hover:bg-gray-50'}`}
+                    className={`transition-colors ${nodeId ? 'cursor-pointer' : 'cursor-not-allowed bg-gray-50'} ${isHighlighted ? 'bg-blue-200 hover:bg-blue-300' : (nodeId ? 'hover:bg-gray-50' : '')}`}
                     onClick={() => nodeId && setHighlightedNodeId(prev => prev === nodeId ? null : nodeId)}
                   >
-                    <td className={`border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center ${isHighlighted ? 'bg-blue-300/50' : 'bg-gray-50/50'}`}>{idx + 1}</td>
-                    <td className="border-b border-r border-gray-300 p-2 font-mono text-sm break-words text-gray-800">
+                    <td className={`border-b border-r border-gray-300 p-2 font-medium text-center ${isHighlighted ? 'bg-blue-300/50 text-gray-800' : (nodeId ? 'bg-gray-50/50 text-gray-800' : 'bg-gray-100/50 text-gray-400')}`}>{idx + 1}</td>
+                    <td className={`border-b border-r border-gray-300 p-2 font-mono text-sm break-words ${nodeId ? 'text-gray-800' : 'text-gray-400'}`}>
                       {formatWithBreaks(clause.join(", "))}
                     </td>
                     <td className="border-b border-r border-gray-300 p-2 text-gray-800 font-medium text-center"></td>
