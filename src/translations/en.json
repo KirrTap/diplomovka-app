@@ -27,7 +27,8 @@
     "error_prolog_empty_statement": "Empty statement found before dot.",
     "error_prolog_unexpected_token": "Unexpected token in Prolog: '{value}'",
     "error_prolog_invalid_predicate": "Invalid predicate format.",
-    "error_prolog_invalid_term": "Invalid term format."
+    "error_prolog_invalid_term": "Invalid term format.",
+    "error_prolog_missing_query": "Missing query (?-)."
   },
   "transformation_steps": "Transformation steps",
   "parsed_formula": "Parsed formula",

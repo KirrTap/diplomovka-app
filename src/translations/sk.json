@@ -27,7 +27,8 @@
     "error_prolog_empty_statement": "Prázdny príkaz pred bodkou.",
     "error_prolog_unexpected_token": "Neočekávaný symbol v Prologu: '{value}'",
     "error_prolog_invalid_predicate": "Neplatný formát predikátu.",
-    "error_prolog_invalid_term": "Neplatný formát termu."
+    "error_prolog_invalid_term": "Neplatný formát termu.",
+    "error_prolog_missing_query": "Chýba cieľ (?-)."
   },
   "transformation_steps": "Kroky transformácie",
   "parsed_formula": "Parsovaná formula",

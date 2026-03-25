@@ -235,7 +235,7 @@ export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
   } else if (queryNode) {
     return queryNode;
   } else if (kbAst) {
-    return kbAst;
+    throw new Error("errors.error_prolog_missing_query");
   } else {
     throw new Error("errors.error_prolog_empty_statement");
   }
