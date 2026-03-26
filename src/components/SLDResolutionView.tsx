@@ -174,8 +174,8 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
   };
 
   return (
-    <div ref={containerRef} className="flex w-full gap-4 scroll-mt-6">
-      <div className="w-[60%] flex flex-col">
+    <div ref={containerRef} className="flex flex-col lg:flex-row w-full gap-4 scroll-mt-6">
+      <div className="w-full lg:w-[60%] flex flex-col">
         <SLDTree 
           treeData={treeData} 
           visibleSteps={visibleSteps} 
@@ -189,7 +189,7 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
         />
       </div>
 
-      <div className="w-[40%] flex flex-col bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-[757px]">
+      <div className="w-full lg:w-[40%] flex flex-col bg-white p-6 rounded-xl shadow-lg border border-gray-200 min-h-[500px] lg:h-[757px]">
         <div className="flex items-center gap-3 mb-4 flex-shrink-0">
           <h3 className="font-bold text-lg text-gray-700">{t("resolution_trace")}</h3>
           <button 

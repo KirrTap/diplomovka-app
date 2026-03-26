@@ -37,10 +37,10 @@ function Content() {
   };
 
   return (
-    <div className="min-h-screen p-6">
-      {/* Horná časť aplikácie (hlavička, formulár, kroky) zostáva vycentrovaná na 80% */}
-      <div className="w-[80%] mx-auto">
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen p-4 md:p-6">
+      {/* Horná časť aplikácie (hlavička, formulár, kroky) zostáva vycentrovaná na 80% na väčších obrazovkách */}
+      <div className="w-full lg:w-[80%] mx-auto max-w-7xl">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
           <div className="flex items-center gap-1">
             <Logo />
             <h1 className="text-3xl font-semibold leading-none">
