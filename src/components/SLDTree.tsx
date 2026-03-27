@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FaCopy } from "react-icons/fa";
 import {
   ReactFlow,
@@ -111,7 +111,16 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
   const isLocked = false; // Povolené približovanie a posúvanie
   const { fitView } = useReactFlow();
 
+  // LaTeX modal state
+  const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
+  const [latexExportType, setLatexExportType] = useState<'document' | 'tree'>('tree');
+  const [latexOrientation, setLatexOrientation] = useState<'portrait' | 'landscape'>('portrait');
+
   const copyTreeToLatex = () => {
+    setIsLatexModalOpen(true);
+  };
+
+  const handleConfirmLatexCopy = () => {
     if (!treeData || treeData.nodes.length === 0) return;
 
     // Convert the tree into a representation suitable for LaTeX forest
@@ -136,15 +145,7 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
     });
 
     const formatLatexLabel = (goals: any[]) => {
-      if (goals.length === 0) return "\\Box";
-      // To allow text wrapping inside math mode in TikZ/Forest, we can wrap each predicate 
-      // in its own math mode. Instead of using commas natively, we'll wrap it in a tabular 
-      // or similar environment if we want very strict multi-line breaks, but standard text
-      // separation using spaces helps LaTeX break it.
-      // We will replace spaces with line breaks (\\) natively for VERY long goals if needed,
-      // but simply separating them by ", " and using text width should work.
-      // To ensure that even a SINGLE long predicate wraps, we can't easily break inside math mode.
-      // But we will allow breaking at the commas.
+      if (goals.length === 0) return "$\\Box$";
       return goals.map(g => `$${predicateToString(g).replace(/[~¬]/g, '\\neg ').replace(/_/g, '\\_')}$`).join(",\\\\");
     };
 
@@ -202,15 +203,36 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
 
     const treeLatex = buildTreeString(root.id);
 
-    const latex = `\\documentclass{article}
+    let latex = "";
+
+    if (latexExportType === 'tree') {
+      latex += `% ${t("latex_export_warning")}\n`;
+      latex += `% \\usepackage{forest}\n`;
+      latex += `% \\usepackage{amssymb}\n`;
+      if (latexOrientation === 'landscape') {
+        latex += `% \\usepackage{pdflscape}\n`;
+      }
+      latex += `\n`;
+    }
+
+    if (latexExportType === 'document') {
+      const margin = latexOrientation === 'landscape' ? '[a4paper, margin=1cm]' : '[a4paper, margin=1cm]';
+      latex += `\\documentclass{article}
 \\usepackage{xcolor}
 \\usepackage{forest}
 \\usepackage{amssymb}
-\\usepackage[a4paper, margin=1cm]{geometry}
-
+\\usepackage${margin}{geometry}
+${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
 \\begin{document}
 
-\\begin{center}
+`;
+    }
+
+    if (latexOrientation === 'landscape') {
+      latex += `\\begin{landscape}\n`;
+    }
+
+    latex += `\\begin{center}
 \\begin{forest}
   for tree={
     font=\\sffamily\\small,
@@ -230,11 +252,20 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
   }
 ${treeLatex}
 \\end{forest}
-\\end{center}
+\\end{center}`;
+
+    if (latexOrientation === 'landscape') {
+      latex += `\n\\end{landscape}`;
+    }
+
+    if (latexExportType === 'document') {
+      latex += `
 
 \\end{document}`;
+    }
 
     navigator.clipboard.writeText(latex);
+    setIsLatexModalOpen(false);
   };
 
   useEffect(() => {
@@ -326,7 +357,7 @@ ${treeLatex}
               <button 
                 onClick={copyTreeToLatex}
                 className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                title="Copy Tree to LaTeX"
+                title={t("export_tree_latex")}
               >
                 <FaCopy className="w-5 h-5" />
               </button>
@@ -388,6 +419,46 @@ ${treeLatex}
           <Controls showInteractive={false} />
         </ReactFlow>
       </div>
+
+      {isLatexModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-96 max-w-full">
+            <h3 className="text-lg font-bold mb-4 text-gray-800">{t("export_latex_title")}</h3>
+            <div className="mb-4">
+              <label className="block mb-2 font-semibold text-gray-700">{t("export_latex_scope")}</label>
+              <div className="flex flex-col gap-2">
+                <label className="inline-flex items-center text-gray-700 cursor-pointer">
+                  <input type="radio" value="tree" checked={latexExportType === 'tree'} onChange={() => setLatexExportType('tree')} className="mr-2 cursor-pointer" />
+                  {t("export_latex_tree_only")}
+                </label>
+                <label className="inline-flex items-center text-gray-700 cursor-pointer">
+                  <input type="radio" value="document" checked={latexExportType === 'document'} onChange={() => setLatexExportType('document')} className="mr-2 cursor-pointer" />
+                  {t("export_latex_full_document")}
+                </label>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-2 font-semibold text-gray-700">{t("export_latex_orientation")}</label>
+              <div className="flex flex-col gap-2">
+                <label className="inline-flex items-center text-gray-700 cursor-pointer">
+                  <input type="radio" value="portrait" checked={latexOrientation === 'portrait'} onChange={() => setLatexOrientation('portrait')} className="mr-2 cursor-pointer" />
+                  {t("export_latex_portrait")}
+                </label>
+                <label className="inline-flex items-center text-gray-700 cursor-pointer">
+                  <input type="radio" value="landscape" checked={latexOrientation === 'landscape'} onChange={() => setLatexOrientation('landscape')} className="mr-2 cursor-pointer" />
+                  {t("export_latex_landscape")}
+                </label>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded transition-colors" onClick={() => setIsLatexModalOpen(false)}>{t("cancel")}</button>
+              <button className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors" onClick={handleConfirmLatexCopy}>{t("copy")}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

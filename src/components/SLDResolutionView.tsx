@@ -33,6 +33,11 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
   const [visibleSteps, setVisibleSteps] = useState<number>(1);
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
 
+  // LaTeX modal state
+  const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
+  const [latexExportType, setLatexExportType] = useState<'document' | 'table'>('table');
+  const [latexOrientation, setLatexOrientation] = useState<'portrait' | 'landscape'>('portrait');
+
   const resolutionData = useMemo(() => {
     try {
       const type = decideLogicType(tokens);
@@ -89,6 +94,10 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
   }, [highlightedNodeId, resolutionData, visibleSteps]);
 
   const copyToLatex = () => {
+    setIsLatexModalOpen(true);
+  };
+
+  const handleConfirmLatexCopy = () => {
     if (!resolutionData || !resolutionData.treeData) return;
 
     const { treeData, knowledgeBase, goals } = resolutionData;
@@ -102,14 +111,35 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
       });
     }
 
-    let latex = `\\documentclass{article}
-\\usepackage{amssymb}
-\\usepackage[a4paper, margin=1cm]{geometry}
-\\usepackage{longtable}
+    let latex = "";
+    
+    if (latexExportType === 'table') {
+      latex += `% ${t("latex_export_warning")}\n`;
+      latex += `% \\usepackage{amssymb}\n`;
+      latex += `% \\usepackage{longtable}\n`;
+      if (latexOrientation === 'landscape') {
+        latex += `% \\usepackage{pdflscape}\n`;
+      }
+      latex += `\n`;
+    }
 
+    if (latexExportType === 'document') {
+      const margin = latexOrientation === 'landscape' ? '[a4paper, margin=1cm]' : '[a4paper, margin=1cm]';
+      latex += `\\documentclass{article}
+\\usepackage{amssymb}
+\\usepackage${margin}{geometry}
+\\usepackage{longtable}
+${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
 \\begin{document}
 
-\\begin{longtable}{|c|l|c|c|}
+`;
+    }
+
+    if (latexOrientation === 'landscape') {
+      latex += `\\begin{landscape}\n`;
+    }
+
+    latex += `\\begin{longtable}{|c|l|c|c|}
 \\hline
 \\textbf{Step} & \\textbf{Clause} & \\textbf{Resolved} & \\textbf{Unification} \\\\
 \\hline
@@ -142,10 +172,20 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
       latex += `${initialClauses.length + idx + 1} & $${resolventText}$ & ${resolvedWithText} & $${displayUnificationText}$ \\\\\n\\hline\n`;
     });
 
-    latex += `\\end{longtable}
+    latex += `\\end{longtable}`;
+
+    if (latexOrientation === 'landscape') {
+      latex += `\n\\end{landscape}`;
+    }
+
+    if (latexExportType === 'document') {
+      latex += `
 
 \\end{document}`;
+    }
+
     navigator.clipboard.writeText(latex);
+    setIsLatexModalOpen(false);
   };
 
   if (!resolutionData || !resolutionData.treeData || resolutionData.treeData.nodes.length === 0) return null;
@@ -195,7 +235,7 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
           <button 
             onClick={copyToLatex}
             className="p-2 ml-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Copy to LaTeX"
+            title={t("export_table_latex")}
           >
             <FaCopy className="w-5 h-5" />
           </button>
@@ -277,6 +317,46 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
           </table>
         </div>
       </div>
+
+      {isLatexModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-96 max-w-full">
+            <h3 className="text-lg font-bold mb-4 text-gray-800">{t("export_latex_title")}</h3>
+            <div className="mb-4">
+              <label className="block mb-2 font-semibold text-gray-700">{t("export_latex_scope")}</label>
+              <div className="flex flex-col gap-2">
+                <label className="inline-flex items-center text-gray-700 cursor-pointer">
+                  <input type="radio" value="table" checked={latexExportType === 'table'} onChange={() => setLatexExportType('table')} className="mr-2 cursor-pointer" />
+                  {t("export_latex_table_only")}
+                </label>
+                <label className="inline-flex items-center text-gray-700 cursor-pointer">
+                  <input type="radio" value="document" checked={latexExportType === 'document'} onChange={() => setLatexExportType('document')} className="mr-2 cursor-pointer" />
+                  {t("export_latex_full_document")}
+                </label>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-2 font-semibold text-gray-700">{t("export_latex_orientation")}</label>
+              <div className="flex flex-col gap-2">
+                <label className="inline-flex items-center text-gray-700 cursor-pointer">
+                  <input type="radio" value="portrait" checked={latexOrientation === 'portrait'} onChange={() => setLatexOrientation('portrait')} className="mr-2 cursor-pointer" />
+                  {t("export_latex_portrait")}
+                </label>
+                <label className="inline-flex items-center text-gray-700 cursor-pointer">
+                  <input type="radio" value="landscape" checked={latexOrientation === 'landscape'} onChange={() => setLatexOrientation('landscape')} className="mr-2 cursor-pointer" />
+                  {t("export_latex_landscape")}
+                </label>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded transition-colors" onClick={() => setIsLatexModalOpen(false)}>{t("cancel")}</button>
+              <button className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors" onClick={handleConfirmLatexCopy}>{t("copy")}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
