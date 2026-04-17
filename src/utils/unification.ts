@@ -72,7 +72,7 @@ export function parseLiteralToPredicate(literal: string): Predicate {
     // Given your example f(x1,x3,x2), x1, x2, x3 are obviously meant to be VARIABLES!
     // Let's treat it as a variable if it's an isolated lowercase 'x', 'y', 'z' (possibly with numbers) 
     // OR if it starts with an Uppercase letter.
-    if (termStr.match(/^[A-Z]/) || termStr.match(/^[xyz]\d*$/i)) {
+    if (termStr.match(/^[A-Z]/) || termStr.match(/^[xyzw]\d*$/i)) {
       return { type: "Variable", name: termStr };
     }
     
