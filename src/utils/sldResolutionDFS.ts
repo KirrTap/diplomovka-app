@@ -135,7 +135,7 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
            // Zobrazíme iba ak sa takáto premenná ešte nevyskytla, aby nevznikali duplikáty (napr X/jano a X/jano)
            if (!seenKeys.has(cleanKey)) {
              seenKeys.add(cleanKey);
-             substStrings.push(`${cleanVal}/${cleanKey}`);
+             substStrings.push(`${cleanKey}/${cleanVal}`);
            }
         });
         

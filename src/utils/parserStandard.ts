@@ -138,10 +138,34 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
     return parseQuantifier();
   }
 
+  const boundVariables = new Set<string>();
+  const quantifierVariableStack: string[][] = [];
+
+  function enterQuantifierScope(varName: string): void {
+    if (!quantifierVariableStack.length) {
+      boundVariables.add(varName);
+    } else {
+      quantifierVariableStack[quantifierVariableStack.length - 1].push(varName);
+    }
+    quantifierVariableStack.push([]);
+  }
+
+  function exitQuantifierScope(): void {
+    const vars = quantifierVariableStack.pop();
+    if (vars) {
+      for (const v of vars) {
+        boundVariables.delete(v);
+      }
+    }
+  }
+
+  function isBound(name: string): boolean {
+    return boundVariables.has(name);
+  }
+
   function parseQuantifier(): ASTNode {
     const current = peek();
     
-    // Ak nájdeme kvantifikátor bez zátvorky, je to chyba
     if (current.type === "forall" || current.type === "exists") {
       throw new Error("errors.error_invalid_quantifier_format");
     }
@@ -149,7 +173,6 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
     if (current.type === "lparen") {
       const next = tokens[pos + 1];
       if (next && (next.type === "forall" || next.type === "exists")) {
-        // Musí to byť presne (∀x)Formula, nič iné neakceptujeme
         eat("lparen");
         const symbol = peek().type as "forall" | "exists";
         eat(symbol);
@@ -158,7 +181,6 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         const variable = (peek() as any).value;
         eat("lower_id");
         
-        // Ak nenasleduje pravá zátvorka hneď po premennej (teda napr. (∀x Formula)), je to chyba
         if (peek().type !== "rparen") {
           throw new Error("errors.error_invalid_quantifier_format");
         }
@@ -176,7 +198,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
           throw new Error(`errors.error_missing_right_side|${getSymbolFromType(symbol)}`);
         }
         
-        const formula = parseNegation(); // Kvantifikátor sa viaže rovnako silno ako negácia / hneď na ďalší výraz
+        enterQuantifierScope(variable);
+        const formula = parseNegation();
+        exitQuantifierScope();
         return { type: "Quantifier", symbol, variable, formula };
       }
     }
@@ -261,7 +285,7 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
     throw new Error(`errors.error_unexpected_token|${getSymbolFromType(currentType)}`);
   }
 
-  function parseTerm(): ASTNode {
+  function parseTerm(inPredicateArg = false): ASTNode {
     const type = peek().type;
     if (type === "comma") {
       throw new Error("errors.error_unexpected_comma");
@@ -275,18 +299,12 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
       throw new Error(`errors.error_operator_inside_arguments|${getSymbolFromType(type)}`);
     }
 
-    if (peek().type === "upper_id") {
-      const name = (peek() as any).value;
-      eat("upper_id");
-      if (peek().type === "lparen") {
-        throw new Error(`errors.error_predicate_as_argument|${name}`);
-      }
-      return { type: "Constant", name };
-    }
+    const VAR_REGEX = /^[xyzw]\d*$/i;
 
     if (peek().type === "lower_id") {
       const name = (peek() as any).value;
       eat("lower_id");
+
       if (peek().type === "lparen") {
         eat("lparen");
         if (peek().type === "rparen") {
@@ -294,7 +312,7 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         }
         const args: ASTNode[] = [];
         while (peek().type === "upper_id" || peek().type === "lower_id") {
-          args.push(parseTerm());
+          args.push(parseTerm(true));
           if (peek().type === "comma") {
             eat("comma");
             if (peek().type === "rparen") {
@@ -320,7 +338,52 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
           throw new Error("errors.error_parentheses");
         }
         eat("rparen");
-        return { type: "Function", name, args };
+        return { type: inPredicateArg ? "Function" : "Predicate", name, args };
+      }
+
+      if (isBound(name) || VAR_REGEX.test(name)) {
+        return { type: "Variable", name };
+      }
+      return { type: "Constant", name };
+    }
+
+    if (peek().type === "upper_id") {
+      const name = (peek() as any).value;
+      eat("upper_id");
+      if (peek().type === "lparen") {
+        eat("lparen");
+        if (peek().type === "rparen") {
+          throw new Error("errors.error_empty_arguments");
+        }
+        const args: ASTNode[] = [];
+        while (peek().type === "upper_id" || peek().type === "lower_id") {
+          args.push(parseTerm(true));
+          if (peek().type === "comma") {
+            eat("comma");
+            if (peek().type === "rparen") {
+              throw new Error("errors.error_unexpected_comma");
+            }
+          }
+        }
+
+        const nextType = peek().type;
+        if (nextType === "comma") {
+          throw new Error("errors.error_unexpected_comma");
+        }
+        if (
+          nextType === "and" ||
+          nextType === "or" ||
+          nextType === "implies" ||
+          nextType === "not"
+        ) {
+          throw new Error(`errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`);
+        }
+
+        if (peek().type !== "rparen") {
+          throw new Error("errors.error_parentheses");
+        }
+        eat("rparen");
+        return { type: inPredicateArg ? "Function" : "Predicate", name, args };
       }
       return { type: "Variable", name };
     }

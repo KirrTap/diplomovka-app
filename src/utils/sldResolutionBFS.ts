@@ -94,7 +94,7 @@ export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: stri
 
            if (!seenKeys.has(cleanKey)) {
              seenKeys.add(cleanKey);
-             substStrings.push(`${cleanVal}/${cleanKey}`);
+             substStrings.push(`${cleanKey}/${cleanVal}`);
            }
         });
         
