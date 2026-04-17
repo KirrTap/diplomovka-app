@@ -196,12 +196,13 @@ export function renameQuantifierVariables(ast: ASTNode): ASTNode {
 
 // 5. Prenexná normálna forma (PNF)
 export function toPNF(node: ASTNode): ASTNode {
-  const quantifiers: { symbol: "forall" | "exists"; variable: string }[] = [];
+  const quantifiers: { symbol: "forall" | "exists"; variable: string; order: number }[] = [];
+  let orderCounter = 0;
 
   function collectAndStrip(n: ASTNode): ASTNode {
     switch (n.type) {
       case "Quantifier":
-        quantifiers.push({ symbol: n.symbol, variable: n.variable });
+        quantifiers.push({ symbol: n.symbol, variable: n.variable, order: orderCounter++ });
         return collectAndStrip(n.formula);
       case "BinaryExpression":
         return {
@@ -224,10 +225,71 @@ export function toPNF(node: ASTNode): ASTNode {
   const sortedQuantifiers = [...quantifiers].sort((a, b) => {
     if (a.symbol === "exists" && b.symbol === "forall") return -1;
     if (a.symbol === "forall" && b.symbol === "exists") return 1;
-    return 0;
+    return a.order - b.order;
   });
 
+  const vars = sortedQuantifiers.map(q => q.variable);
+
+  function findFirstVarUsage(node: ASTNode, availableVars: string[]): number {
+    function hasVar(n: ASTNode, varName: string): boolean {
+      switch (n.type) {
+        case "Predicate":
+          return n.args.some(arg => {
+            if (arg.type === "Variable") return arg.name === varName;
+            if (arg.type === "Function") return hasVarInTerm(arg, varName);
+            return false;
+          });
+        case "Function":
+          return hasVarInTerm(n, varName);
+        default:
+          return false;
+      }
+    }
+    function hasVarInTerm(term: ASTNode, varName: string): boolean {
+      if (term.type === "Variable") return term.name === varName;
+      if (term.type === "Function") return term.args.some(a => hasVarInTerm(a, varName));
+      return false;
+    }
+    for (let i = 0; i < availableVars.length; i++) {
+      if (hasVar(node, availableVars[i])) return i;
+    }
+    return availableVars.length;
+  }
+
+  function collectLiterals(n: ASTNode, list: ASTNode[]): void {
+    if (n.type === "BinaryExpression" && n.operator === "and") {
+      collectLiterals(n.left, list);
+      collectLiterals(n.right, list);
+    } else {
+      list.push(n);
+    }
+  }
+
+  function rebuildConjunction(literals: ASTNode[]): ASTNode {
+    if (literals.length === 0) return { type: "Predicate", name: "true", args: [] };
+    if (literals.length === 1) return literals[0];
+    let result = literals[0];
+    for (let i = 1; i < literals.length; i++) {
+      result = { type: "BinaryExpression", operator: "and", left: result, right: literals[i] };
+    }
+    return result;
+  }
+
   let result = matrix;
+
+  if (vars.length > 0) {
+    const literals: ASTNode[] = [];
+    collectLiterals(matrix, literals);
+
+    const sortedLiterals = [...literals].sort((a, b) => {
+      const aIdx = findFirstVarUsage(a, vars);
+      const bIdx = findFirstVarUsage(b, vars);
+      return aIdx - bIdx;
+    });
+
+    result = rebuildConjunction(sortedLiterals);
+  }
+
   for (let i = sortedQuantifiers.length - 1; i >= 0; i--) {
     result = {
       type: "Quantifier",
