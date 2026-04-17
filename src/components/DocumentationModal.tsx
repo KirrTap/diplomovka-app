@@ -93,7 +93,7 @@ export const DocumentationModal = ({ isOpen, onClose }: DocumentationModalProps)
                     <h4 className="text-lg font-bold text-blue-700">SLD Strom (Ľavá strana)</h4>
                     <p className="mb-2">Zobrazuje grafický vývoj odvodzovania. Nad stromom sa nachádza hlavný <strong>Tool bar (ovládací panel)</strong>, ktorý obsahuje:</p>
                     <ul className="list-disc pl-5 space-y-1">
-                      <li><strong>Export do LaTeXu:</strong> Hneď vedľa nadpisu "SLD Strom". Po kliknutí sa vám do schránky skopíruje vygenerovaný LaTeX kód tohto stromu. Skonvertuje sa len to, čo momentálne vidíte.</li>
+                      <li><strong>Generovať LaTeX:</strong> Hneď vedľa nadpisu "SLD Strom". Po kliknutí sa vám do schránky skopíruje vygenerovaný LaTeX kód tohto stromu. Skonvertuje sa len to, čo momentálne vidíte.</li>
                       <li><strong>Stratégia prehľadávania:</strong> Prepínač uprostred, kde si viete zvoliť, či sa má použiť <strong>DFS</strong> (do hĺbky) alebo <strong>BFS</strong> (do šírky). Strom aj tabuľka sa hneď prepočítajú.</li>
                       <li><strong>Krokovanie:</strong> Napravo sú tlačidlá pre krokovanie algoritmu. Môžete prechádzať strom po jednom kroku vpred a vzad, alebo kliknúť na tlačidlo „Zobraziť všetko“ a nechať si vykresliť celý výsledok naraz.</li>
                     </ul>
@@ -103,7 +103,7 @@ export const DocumentationModal = ({ isOpen, onClose }: DocumentationModalProps)
                     <h4 className="text-lg font-bold text-blue-700">Tabuľka (Pravá strana)</h4>
                     <p className="mb-2">Zobrazuje textový priebeh rezolúcie. V tabuľke sa nachádza najprv cieľ, pod ním nasledujú fakty a pravidlá (báza znalostí), a následne sa dopĺňa samotný postup, ako sa vykonáva DFS alebo BFS algoritmus. Tabuľka taktiež obsahuje:</p>
                     <ul className="list-disc pl-5 space-y-1">
-                      <li><strong>Export do LaTeXu:</strong> Hneď nad tabuľkou (vedľa nadpisu "Priebeh rezolúcie") nájdete <strong>ikonu exportu</strong>, ktorá vám vygeneruje LaTeX kód tejto tabuľky podľa aktuálne viditeľných krokov.</li>
+                      <li><strong>Generovať LaTeX:</strong> Hneď nad tabuľkou (vedľa nadpisu "Priebeh rezolúcie") nájdete <strong>ikonu</strong>, ktorá vám vygeneruje LaTeX kód tejto tabuľky podľa aktuálne viditeľných krokov.</li>
                     </ul>
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export const DocumentationModal = ({ isOpen, onClose }: DocumentationModalProps)
                     <h4 className="text-lg font-bold text-blue-700">SLD Tree (Left side)</h4>
                     <p className="mb-2">Displays the graphical evolution of the derivation. Above the tree is the main <strong>Tool bar</strong> containing:</p>
                     <ul className="list-disc pl-5 space-y-1">
-                      <li><strong>Export to LaTeX:</strong> Right next to the "SLD Tree" title. Clicking it copies the generated LaTeX code of this tree to your clipboard. It only converts what you currently see.</li>
+                      <li><strong>Generate LaTeX:</strong> Right next to the "SLD Tree" title. Clicking it copies the generated LaTeX code of this tree to your clipboard. It only converts what you currently see.</li>
                       <li><strong>Search Strategy:</strong> A switch in the middle where you can choose between <strong>DFS</strong> (Depth-First) and <strong>BFS</strong> (Breadth-First). The tree and table recalculate immediately.</li>
                       <li><strong>Stepper:</strong> On the right are buttons for stepping through the algorithm. You can step forward and backward, or click "Show all" to draw the entire result at once.</li>
                     </ul>
@@ -194,7 +194,7 @@ export const DocumentationModal = ({ isOpen, onClose }: DocumentationModalProps)
                     <h4 className="text-lg font-bold text-blue-700">Resolution Trace / Table (Right side)</h4>
                     <p className="mb-2">Displays the text-based derivation process. The table first lists the goal, followed by facts and rules (knowledge base), and then the actual steps of the DFS or BFS algorithm are appended. The table also contains:</p>
                     <ul className="list-disc pl-5 space-y-1">
-                      <li><strong>Export to LaTeX:</strong> Right above the table, you will find an <strong>export icon</strong> that generates the LaTeX code for this table based on the currently visible steps.</li>
+                      <li><strong>Generate LaTeX:</strong> Right above the table, you will find an <strong>icon</strong> that generates the LaTeX code for this table based on the currently visible steps.</li>
                     </ul>
                   </div>
                 </div>
