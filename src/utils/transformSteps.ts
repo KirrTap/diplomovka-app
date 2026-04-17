@@ -139,21 +139,13 @@ export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
 export function renameQuantifierVariables(ast: ASTNode): ASTNode {
   const globalUsed: Set<string> = new Set();
 
-  function toSubscript(n: number): string {
-    const subscripts = ["₀", "₁", "₂", "₃", "₄", "₅", "₆", "₇", "₈", "₉"];
-    return String(n)
-      .split("")
-      .map((d) => subscripts[parseInt(d)])
-      .join("");
-  }
-
   function getNextVarName(): string {
-    if (!globalUsed.has("a")) return "a";
+    if (!globalUsed.has("x")) return "x";
     let idx = 1;
-    while (globalUsed.has("a" + toSubscript(idx))) {
+    while (globalUsed.has("x" + idx)) {
       idx++;
     }
-    return "a" + toSubscript(idx);
+    return "x" + idx;
   }
 
   function traverse(node: ASTNode, replacements: Map<string, string>): ASTNode {
@@ -252,30 +244,22 @@ export function toPNF(node: ASTNode): ASTNode {
 export function skolemize(ast: ASTNode): ASTNode {
   const globalUsed: Set<string> = new Set();
 
-  function toSubscript(n: number): string {
-    const subscripts = ["₀", "₁", "₂", "₃", "₄", "₅", "₆", "₇", "₈", "₉"];
-    return String(n)
-      .split("")
-      .map((d) => subscripts[parseInt(d)])
-      .join("");
-  }
-
   function getNextSkolemConstName(): string {
     if (!globalUsed.has("c")) return "c";
     let idx = 1;
-    while (globalUsed.has("c" + toSubscript(idx))) {
+    while (globalUsed.has("c" + idx)) {
       idx++;
     }
-    return "c" + toSubscript(idx);
+    return "c" + idx;
   }
 
   function getNextSkolemFuncName(): string {
     if (!globalUsed.has("f")) return "f";
     let idx = 1;
-    while (globalUsed.has("f" + toSubscript(idx))) {
+    while (globalUsed.has("f" + idx)) {
       idx++;
     }
-    return "f" + toSubscript(idx);
+    return "f" + idx;
   }
 
   function collectNames(node: ASTNode) {

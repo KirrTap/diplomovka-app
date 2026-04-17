@@ -88,11 +88,7 @@ export function logicTokenize(rawInput: string): LogicToken[] {
     }
     if (c.match(/[a-zA-Z_]/)) {
       const start = i;
-      const SUBSCRIPT_REGEX = /[₀₁₂₃₄₅₆₇₈₉]/;
-      while (
-        i < input.length &&
-        (input[i].match(/[a-zA-Z0-9_]/) || input[i].match(SUBSCRIPT_REGEX))
-      ) {
+      while (i < input.length && input[i].match(/[a-zA-Z0-9_]/)) {
         i++;
       }
       const value = input.slice(start, i);
