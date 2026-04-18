@@ -235,17 +235,17 @@ ${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
     latex += `\\begin{center}
 \\begin{forest}
   for tree={
-    font=\\sffamily\\small,
+    font=\\sffamily\\fontsize{6pt}{7pt}\\selectfont,
     child anchor=north,
     parent anchor=south,
     align=center,
     text centered,
-    text width=3.5cm,
-    minimum height=0.8cm,
-    inner sep=4pt,
+    text width=2.8cm,
+    minimum height=0.5cm,
+    inner sep=2pt,
     edge={->, thick},
-    l sep=12mm,
-    s sep=15mm,
+    l sep=8mm,
+    s sep=8mm,
     draw,
     rounded corners,
     fill=white
