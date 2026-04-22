@@ -12,7 +12,7 @@ export const LanguageDropdown = () => {
     <div className="relative inline-block text-left">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 hover:bg-gray-100 w-24"
+        className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 hover:bg-gray-100 w-24 cursor-pointer"
       >
         <ReactCountryFlag svg countryCode={languages[lang].countryCode} />
         <span className="font-medium">{languages[lang].label}</span>
@@ -42,7 +42,7 @@ export const LanguageDropdown = () => {
                   setLang(k);
                   setOpen(false);
                 }}
-                className="flex w-full items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                className="flex w-full items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
               >
                 <ReactCountryFlag svg countryCode={languages[k].countryCode} />
                 <span>{languages[k].label}</span>

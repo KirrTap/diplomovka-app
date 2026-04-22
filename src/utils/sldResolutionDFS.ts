@@ -21,13 +21,15 @@ export interface SLDEdge {
 export interface SLDTreeData {
   nodes: SLDNode[];
   edges: SLDEdge[];
+  hitMaxDepth: boolean;
 }
 
 export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: string[][], maxDepth: number = 15): SLDTreeData {
   const nodes: SLDNode[] = [];
   const edges: SLDEdge[] = [];
+  let hitMaxDepth = false;
   
-  if (initialGoals.length === 0) return { nodes, edges };
+  if (initialGoals.length === 0) return { nodes, edges, hitMaxDepth };
 
   // Parse KB clauses into predicates
   // KB clause format: ["parent(jozo, jano)"] or ["¬parent(X, Z)", "¬parent(Z, Y)", "grandparent(X, Y)"]
@@ -65,6 +67,7 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
   function explore(node: SLDNode, depth: number) {
     if (depth >= maxDepth) {
       node.status = "failure"; // Cut off infinite loops
+      hitMaxDepth = true;
       return;
     }
 
@@ -84,27 +87,27 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
     for (let kbIdx = 0; kbIdx < kbParsed.length; kbIdx++) {
       const kbClause = renameVariablesInClause(kbParsed[kbIdx], nodeIdCounter);
       
-      // Find the positive literal (the Head) in the KB clause
-      const headIdx = kbClause.findIndex(p => !p.isNegated);
-      if (headIdx === -1) continue; // Not a standard definite clause
-      
-      const head = kbClause[headIdx];
-      
-      // The goal is negative (e.g. ¬grandparent), the head is positive (e.g. grandparent).
-      // We unify them ignoring the negation flag.
-      const goalToUnify = { ...currentGoal, isNegated: false };
-      
-      const subst = unifyPredicates(goalToUnify, head);
-      
-      if (subst) {
-        hasChildren = true;
+      // Loop through all literals in the KB clause
+      for (let headIdx = 0; headIdx < kbClause.length; headIdx++) {
+        // Only consider literals with the opposite polarity
+        if (kbClause[headIdx].isNegated === currentGoal.isNegated) continue;
         
-        // Unification succeeded! Create new goals:
-        // 1. Take the body of the KB clause (all negative literals)
-        const kbBody = kbClause.filter((_, idx) => idx !== headIdx);
-        // Change them to pure predicates without the explicit negation flag for resolution,
-        // because in our SLD state array they implicitly represent "goals to prove"
-        const newSubGoals = kbBody.map(p => ({ ...p, isNegated: true }));
+        const head = kbClause[headIdx];
+        
+        // Unify them ignoring the negation flag.
+        const goalToUnify = { ...currentGoal, isNegated: false };
+        const headToUnify = { ...head, isNegated: false };
+        
+        const subst = unifyPredicates(goalToUnify, headToUnify);
+        
+        if (subst) {
+          hasChildren = true;
+          
+          // Unification succeeded! Create new goals:
+          // 1. Take the body of the KB clause (all remaining literals)
+          const kbBody = kbClause.filter((_, idx) => idx !== headIdx);
+          // Change them to pure predicates keeping their explicit negation flag for resolution
+          const newSubGoals = kbBody.map(p => ({ ...p }));
         
         // 2. Add remaining original goals
         const nextGoalsUnsubstituted = [...newSubGoals, ...remainingGoals];
@@ -133,10 +136,10 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
            const cleanVal = termToString(val);
 
            // Zobrazíme iba ak sa takáto premenná ešte nevyskytla, aby nevznikali duplikáty (napr X/jano a X/jano)
-           if (!seenKeys.has(cleanKey)) {
-             seenKeys.add(cleanKey);
-             substStrings.push(`${cleanKey}/${cleanVal}`);
-           }
+             if (!seenKeys.has(cleanKey)) {
+               seenKeys.add(cleanKey);
+               substStrings.push(`${cleanVal}/${cleanKey}`); // term/premenná
+             }
         });
         
         const substStr = substStrings.length > 0 ? `{ ${substStrings.join(", ")} }` : "{ }";
@@ -151,6 +154,7 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
         // Continue DFS
         explore(childNode, depth + 1);
       }
+      }
     }
     
     if (!hasChildren && node.goals.length > 0) {
@@ -160,5 +164,5 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
 
   explore(rootNode, 0);
 
-  return { nodes, edges };
+  return { nodes, edges, hitMaxDepth };
 }

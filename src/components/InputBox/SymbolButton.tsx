@@ -11,7 +11,7 @@ export const SymbolButton: React.FC<SymbolButtonProps> = ({
 }) => {
   return (
     <button
-      className="bg-gray-600 hover:bg-gray-900 text-white font-medium py-4 rounded-md shadow-sm transition-colors duration-150 w-[84px]"
+      className="bg-gray-600 hover:bg-gray-900 text-white font-medium py-4 rounded-md shadow-sm transition-colors duration-150 w-[84px] cursor-pointer"
       onClick={() => onClick && onClick(symbol)}
     >
       {symbol}

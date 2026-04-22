@@ -5,7 +5,7 @@ import type { LanguageKey } from "./translations";
 type LanguageContextType = {
   lang: LanguageKey;
   setLang: (lang: LanguageKey) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 };
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
@@ -15,11 +15,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [lang, setLang] = useState<LanguageKey>("sk");
 
-  const t = (key: string) => {
+  const t = (key: string, params?: Record<string, string | number>) => {
     const translations = languages[lang].translations as Record<
       string,
       unknown
     >;
+    let value: string;
     if (key.includes(".")) {
       let obj: unknown = translations;
       for (const part of key.split(".")) {
@@ -30,10 +31,18 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
           break;
         }
       }
-      const value = obj;
-      return typeof value === "string" ? value : key;
+      value = typeof obj === "string" ? obj : key;
+    } else {
+      value = typeof translations[key] === "string" ? translations[key] : key;
     }
-    return typeof translations[key] === "string" ? translations[key] : key;
+    
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        value = value.replace(`{${k}}`, String(v));
+      });
+    }
+    
+    return value;
   };
 
   return (

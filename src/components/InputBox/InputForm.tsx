@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { EXAMPLES } from "./examples";
+import { EXAMPLES } from "../../data/examples";
 import { useLanguage } from "../../translations/LanguageContext";
 import { replaceShortcutsRealtime } from "../../utils/logicInputShortcuts";
 import { logicTokenize, type LogicToken } from "../../utils/tokenizer";
@@ -92,7 +92,7 @@ export const InputForm = ({
           <button
             ref={exampleBtnRef}
             type="button"
-            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 bg-white text-black font-medium hover:bg-gray-100 min-w-[120px]"
+            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 bg-white text-black font-medium hover:bg-gray-100 min-w-[120px] cursor-pointer"
             style={{ minWidth: 120 }}
             onClick={() => setShowExamples((v) => !v)}
           >
@@ -118,7 +118,7 @@ export const InputForm = ({
               {EXAMPLES.map((ex) => (
                 <button
                   key={ex.labelKey}
-                  className="block w-full text-left px-4 py-2 hover:bg-blue-50 text-gray-800"
+                  className="block w-full text-left px-4 py-2 hover:bg-blue-50 text-gray-800 cursor-pointer"
                   onClick={() => handleExampleSelect(ex.value)}
                   type="button"
                 >

@@ -74,9 +74,12 @@
   "export_latex_orientation": "Orientácia:",
   "export_latex_portrait": "Na výšku",
   "export_latex_landscape": "Na šírku",
-  "export_table_latex": "Generovať LaTeX pre tabuľku",
-  "export_tree_latex": "Generovať LaTeX pre strom",
+  "export_table_latex": "Generovať LaTeX Tabuľku",
+  "export_tree_latex": "Generovať LaTeX Strom",
   "latex_export_warning": "POZOR: Uisti sa, že máš v hlavičke dokumentu (pred \\begin{document}) pridané tieto balíčky:",
   "cancel": "Zrušiť",
-  "copy": "Kopírovať"
+  "copy": "Kopírovať",
+  "infinite_cycle_warning": "Detegovaný potenciálny nekonečný cyklus!",
+  "infinite_cycle_message": "Dosiahnutá maximálna hĺbka stromu (16). Prehľadávanie bolo prerušené, aby sa predišlo nekonečnému cykleniu.",
+  "infinite_cycle_close": "OK"
 }

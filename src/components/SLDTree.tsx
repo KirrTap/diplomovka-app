@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { FaCopy } from "react-icons/fa";
 import {
   ReactFlow,
   useNodesState,
@@ -308,20 +307,29 @@ ${treeLatex}
       };
     });
 
-    const initialEdges: Edge[] = treeData.edges.map((edge) => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      label: edge.label,
-      type: 'smoothstep',
-      labelStyle: { fill: '#374151', fontWeight: 500 },
-      labelBgStyle: { fill: '#f3f4f6', stroke: '#d1d5db' },
-      animated: true,
-      style: {
-        stroke: (edge.source === highlightedNodeId || edge.target === highlightedNodeId) ? '#3b82f6' : '#b1b1b7',
-        strokeWidth: (edge.source === highlightedNodeId || edge.target === highlightedNodeId) ? 3 : 1,
-      },
-    }));
+    const initialEdges: Edge[] = treeData.edges.map((edge) => {
+      const isTargetHighlighted = edge.target === highlightedNodeId;
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        label: edge.label,
+        type: 'smoothstep',
+        labelStyle: { 
+          fill: isTargetHighlighted ? '#2563eb' : '#374151', 
+          fontWeight: isTargetHighlighted ? 700 : 500 
+        },
+        labelBgStyle: { 
+          fill: isTargetHighlighted ? '#dbeafe' : '#f3f4f6', 
+          stroke: isTargetHighlighted ? '#3b82f6' : '#d1d5db' 
+        },
+        animated: true,
+        style: {
+          stroke: isTargetHighlighted ? '#3b82f6' : '#b1b1b7',
+          strokeWidth: isTargetHighlighted ? 3 : 1,
+        },
+      };
+    });
 
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
       initialNodes,
@@ -356,10 +364,9 @@ ${treeLatex}
               <h3 className="font-bold text-lg text-gray-700 whitespace-nowrap">{t("sld_tree")}</h3>
               <button 
                 onClick={copyTreeToLatex}
-                className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                title={t("export_tree_latex")}
+                className="px-5 py-1.5 min-w-[140px] bg-purple-600 text-white rounded-md border border-purple-600 shadow-sm hover:bg-purple-700 hover:border-purple-700 font-bold transition-all text-sm"
               >
-                <FaCopy className="w-5 h-5" />
+                {t("export_tree_latex")}
               </button>
             </div>
             <div className="flex justify-center items-center ml-4">

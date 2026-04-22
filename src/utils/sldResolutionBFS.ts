@@ -4,8 +4,9 @@ import type { SLDNode, SLDEdge, SLDTreeData } from "./sldResolutionDFS";
 export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: string[][], maxDepth: number = 15): SLDTreeData {
   const nodes: SLDNode[] = [];
   const edges: SLDEdge[] = [];
+  let hitMaxDepth = false;
   
-  if (initialGoals.length === 0) return { nodes, edges };
+  if (initialGoals.length === 0) return { nodes, edges, hitMaxDepth };
 
   const kbParsed = knowledgeBase.map(clause => clause.map(parseLiteralToPredicate));
   const rootGoals = initialGoals[0].map(parseLiteralToPredicate);
@@ -39,6 +40,7 @@ export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: stri
 
     if (depth >= maxDepth) {
       node.status = "failure";
+      hitMaxDepth = true;
       continue;
     }
 
@@ -55,20 +57,21 @@ export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: stri
     for (let kbIdx = 0; kbIdx < kbParsed.length; kbIdx++) {
       const kbClause = renameVariablesInClause(kbParsed[kbIdx], nodeIdCounter);
       
-      const headIdx = kbClause.findIndex(p => !p.isNegated);
-      if (headIdx === -1) continue; 
-      
-      const head = kbClause[headIdx];
-      
-      const goalToUnify = { ...currentGoal, isNegated: false };
-      
-      const subst = unifyPredicates(goalToUnify, head);
-      
-      if (subst) {
-        hasChildren = true;
+      for (let headIdx = 0; headIdx < kbClause.length; headIdx++) {
+        if (kbClause[headIdx].isNegated === currentGoal.isNegated) continue;
         
-        const kbBody = kbClause.filter((_, idx) => idx !== headIdx);
-        const newSubGoals = kbBody.map(p => ({ ...p, isNegated: true }));
+        const head = kbClause[headIdx];
+        
+        const goalToUnify = { ...currentGoal, isNegated: false };
+        const headToUnify = { ...head, isNegated: false };
+        
+        const subst = unifyPredicates(goalToUnify, headToUnify);
+        
+        if (subst) {
+          hasChildren = true;
+          
+          const kbBody = kbClause.filter((_, idx) => idx !== headIdx);
+          const newSubGoals = kbBody.map(p => ({ ...p }));
         
         const nextGoalsUnsubstituted = [...newSubGoals, ...remainingGoals];
         
@@ -92,10 +95,10 @@ export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: stri
            const cleanKey = key.replace(/_\d+$/, "");
            const cleanVal = termToString(val);
 
-           if (!seenKeys.has(cleanKey)) {
-             seenKeys.add(cleanKey);
-             substStrings.push(`${cleanKey}/${cleanVal}`);
-           }
+             if (!seenKeys.has(cleanKey)) {
+               seenKeys.add(cleanKey);
+               substStrings.push(`${cleanVal}/${cleanKey}`); // term/premenná
+             }
         });
         
         const substStr = substStrings.length > 0 ? `{ ${substStrings.join(", ")} }` : "{ }";
@@ -109,6 +112,7 @@ export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: stri
 
         queue.push({ node: childNode, depth: depth + 1 });
       }
+      }
     }
     
     if (!hasChildren && node.goals.length > 0) {
@@ -116,5 +120,5 @@ export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: stri
     }
   }
 
-  return { nodes, edges };
+  return { nodes, edges, hitMaxDepth };
 }

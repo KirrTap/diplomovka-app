@@ -17,7 +17,11 @@ export function prepareSLD(clauses: Clause[]): SLDResult {
   for (const clause of clauses) {
     // Ak je klauzula prázdna, technicky je to spor, ale dáme to k cieľom
     if (clause.length === 0) {
-      goals.push(clause);
+      if (goals.length === 0) {
+        goals.push(clause);
+      } else {
+        knowledgeBase.push(clause);
+      }
       continue;
     }
 
@@ -32,7 +36,10 @@ export function prepareSLD(clauses: Clause[]): SLDResult {
       }
     }
 
-    if (isGoalClause) {
+    // SLD Resolution funguje tak, že ZÁKLADNÝ CIEĽ je len prvý.
+    // Ďalšie negatívne klauzuly (napr. z iných obmedzení) idú do knowledge base,
+    // aby sme ich mohli počas rezolúcie zunifikovať, inak sa úplne stratia.
+    if (isGoalClause && goals.length === 0) {
       goals.push(clause);
     } else {
       knowledgeBase.push(clause);

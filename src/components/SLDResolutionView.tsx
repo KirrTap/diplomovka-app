@@ -19,7 +19,6 @@ import { generateSLDTreeBFS } from "../utils/sldResolutionBFS";
 import { SLDTree } from "./SLDTree";
 import { useLanguage } from "../translations/LanguageContext";
 import { predicateToString } from "../utils/unification";
-import { FaCopy } from "react-icons/fa";
 
 interface SLDResolutionViewProps {
   tokens: LogicToken[];
@@ -37,6 +36,7 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
   const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
   const [latexExportType, setLatexExportType] = useState<'document' | 'table'>('table');
   const [latexOrientation, setLatexOrientation] = useState<'portrait' | 'landscape'>('portrait');
+  const [showCycleModal, setShowCycleModal] = useState(false);
 
   const resolutionData = useMemo(() => {
     try {
@@ -59,7 +59,7 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
       } else {
         treeData = generateSLDTreeDFS(sld.knowledgeBase, sld.goals);
       }
-      return { treeData, knowledgeBase: sld.knowledgeBase, goals: sld.goals };
+      return { treeData, knowledgeBase: sld.knowledgeBase, goals: sld.goals, hitMaxDepth: treeData.hitMaxDepth };
     } catch {
       return null;
     }
@@ -92,6 +92,13 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
       }
     }
   }, [highlightedNodeId, resolutionData, visibleSteps]);
+
+  // Show cycle modal when user reaches last step and hitMaxDepth is true
+  useEffect(() => {
+    if (resolutionData?.hitMaxDepth && visibleSteps >= resolutionData.treeData.nodes.length && resolutionData.treeData.nodes.length > 0) {
+      setShowCycleModal(true);
+    }
+  }, [visibleSteps, resolutionData]);
 
   const copyToLatex = () => {
     setIsLatexModalOpen(true);
@@ -234,10 +241,9 @@ ${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
           <h3 className="font-bold text-lg text-gray-700">{t("resolution_trace")}</h3>
           <button 
             onClick={copyToLatex}
-            className="p-2 ml-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title={t("export_table_latex")}
+            className="px-5 py-1.5 min-w-[140px] bg-purple-600 text-white rounded-md border border-purple-600 shadow-sm hover:bg-purple-700 hover:border-purple-700 font-bold transition-all text-sm"
           >
-            <FaCopy className="w-5 h-5" />
+            {t("export_table_latex")}
           </button>
         </div>
         <div className="flex-1 overflow-auto rounded-lg shadow-sm border border-gray-300">
@@ -353,6 +359,25 @@ ${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
             <div className="flex justify-end gap-3 mt-6">
               <button className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded transition-colors" onClick={() => setIsLatexModalOpen(false)}>{t("cancel")}</button>
               <button className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors" onClick={handleConfirmLatexCopy}>{t("copy")}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCycleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-96 max-w-full">
+            <h3 className="text-lg font-bold mb-4 text-amber-800">{t("infinite_cycle_warning")}</h3>
+            <p className="text-gray-700 mb-6">
+              {t("infinite_cycle_message")}
+            </p>
+            <div className="flex justify-end">
+              <button 
+                className="px-4 py-2 text-white bg-amber-500 hover:bg-amber-600 rounded transition-colors" 
+                onClick={() => setShowCycleModal(false)}
+              >
+                {t("infinite_cycle_close")}
+              </button>
             </div>
           </div>
         </div>

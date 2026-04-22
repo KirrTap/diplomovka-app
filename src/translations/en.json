@@ -74,9 +74,12 @@
   "export_latex_orientation": "Orientation:",
   "export_latex_portrait": "Portrait",
   "export_latex_landscape": "Landscape",
-  "export_table_latex": "Generate table LaTeX",
-  "export_tree_latex": "Generate tree LaTeX",
+  "export_table_latex": "Generate LaTeX Table",
+  "export_tree_latex": "Generate LaTeX Tree",
   "latex_export_warning": "WARNING: Make sure you have included these packages in your document preamble (before \\begin{document}):",
   "cancel": "Cancel",
-  "copy": "Copy"
+  "copy": "Copy",
+  "infinite_cycle_warning": "Potential infinite cycle detected!",
+  "infinite_cycle_message": "Maximum tree depth (16) has been reached. Search was cut off to prevent infinite loops.",
+  "infinite_cycle_close": "OK"
 }

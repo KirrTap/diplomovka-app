@@ -50,7 +50,7 @@ function Content() {
           <div className="flex items-center gap-6">
             <button 
               onClick={() => setShowDocs(true)}
-              className="text-gray-600 hover:text-blue-600 font-medium transition-colors border-b-2 border-transparent hover:border-blue-600"
+              className="text-gray-600 hover:text-blue-600 font-medium transition-colors border-b-2 border-transparent hover:border-blue-600 cursor-pointer"
             >
               {t("documentation")}
             </button>
