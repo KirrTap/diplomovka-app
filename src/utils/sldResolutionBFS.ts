@@ -1,15 +1,15 @@
 import { parseLiteralToPredicate, unifyPredicates, applySubstitutionToPredicate, termToString, type Predicate, type Term } from "./unification";
 import type { SLDNode, SLDEdge, SLDTreeData } from "./sldResolutionDFS";
 
-export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: string[][], maxDepth: number = 15): SLDTreeData {
+export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: string[][], maxDepth: number = 15, variables: string[] = []): SLDTreeData {
   const nodes: SLDNode[] = [];
   const edges: SLDEdge[] = [];
   let hitMaxDepth = false;
-  
+
   if (initialGoals.length === 0) return { nodes, edges, hitMaxDepth };
 
-  const kbParsed = knowledgeBase.map(clause => clause.map(parseLiteralToPredicate));
-  const rootGoals = initialGoals[0].map(parseLiteralToPredicate);
+  const kbParsed = knowledgeBase.map(clause => clause.map(lit => parseLiteralToPredicate(lit, variables)));
+  const rootGoals = initialGoals[0].map(lit => parseLiteralToPredicate(lit, variables));
   
   let nodeIdCounter = 0;
   

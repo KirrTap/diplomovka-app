@@ -24,20 +24,20 @@ export interface SLDTreeData {
   hitMaxDepth: boolean;
 }
 
-export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: string[][], maxDepth: number = 15): SLDTreeData {
+export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: string[][], maxDepth: number = 15, variables: string[] = []): SLDTreeData {
   const nodes: SLDNode[] = [];
   const edges: SLDEdge[] = [];
   let hitMaxDepth = false;
-  
+
   if (initialGoals.length === 0) return { nodes, edges, hitMaxDepth };
 
   // Parse KB clauses into predicates
   // KB clause format: ["parent(jozo, jano)"] or ["¬parent(X, Z)", "¬parent(Z, Y)", "grandparent(X, Y)"]
-  const kbParsed = knowledgeBase.map(clause => clause.map(parseLiteralToPredicate));
-  
+  const kbParsed = knowledgeBase.map(clause => clause.map(lit => parseLiteralToPredicate(lit, variables)));
+
   // Initialize first node with the first goal clause
   // Goals are negative, e.g. ["¬grandparent(jozo, Y)"]
-  const rootGoals = initialGoals[0].map(parseLiteralToPredicate);
+  const rootGoals = initialGoals[0].map(lit => parseLiteralToPredicate(lit, variables));
   
   let nodeIdCounter = 0;
   

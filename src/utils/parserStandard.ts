@@ -139,24 +139,16 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
   }
 
   const boundVariables = new Set<string>();
-  const quantifierVariableStack: string[][] = [];
+  const scopeStack: string[] = [];
 
   function enterQuantifierScope(varName: string): void {
-    if (!quantifierVariableStack.length) {
-      boundVariables.add(varName);
-    } else {
-      quantifierVariableStack[quantifierVariableStack.length - 1].push(varName);
-    }
-    quantifierVariableStack.push([]);
+    boundVariables.add(varName);
+    scopeStack.push(varName);
   }
 
   function exitQuantifierScope(): void {
-    const vars = quantifierVariableStack.pop();
-    if (vars) {
-      for (const v of vars) {
-        boundVariables.delete(v);
-      }
-    }
+    const varName = scopeStack.pop();
+    if (varName !== undefined) boundVariables.delete(varName);
   }
 
   function isBound(name: string): boolean {
@@ -177,9 +169,11 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         const symbol = peek().type as "forall" | "exists";
         eat(symbol);
         
-        if (peek().type !== "lower_id") throw new Error("errors.quantifier_variable_missing");
+        if (peek().type !== "lower_id" && peek().type !== "upper_id")
+          throw new Error("errors.quantifier_variable_missing");
+        const varTokenType = peek().type as "lower_id" | "upper_id";
         const variable = (peek() as any).value;
-        eat("lower_id");
+        eat(varTokenType);
         
         if (peek().type !== "rparen") {
           throw new Error("errors.error_invalid_quantifier_format");
@@ -338,8 +332,6 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
       throw new Error(`errors.error_operator_inside_arguments|${getSymbolFromType(type)}`);
     }
 
-    const VAR_REGEX = /^[xyzw]\d*$/i;
-
     if (peek().type === "lower_id") {
       const name = (peek() as any).value;
       eat("lower_id");
@@ -380,7 +372,7 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         return { type: inPredicateArg ? "Function" : "Predicate", name, args };
       }
 
-      if (isBound(name) || VAR_REGEX.test(name)) {
+      if (isBound(name)) {
         return { type: "Variable", name };
       }
       return { type: "Constant", name };
@@ -424,7 +416,8 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         eat("rparen");
         return { type: inPredicateArg ? "Function" : "Predicate", name, args };
       }
-      return { type: "Variable", name };
+      if (isBound(name)) return { type: "Variable", name };
+      return { type: "Constant", name };
     }
 
     if (peek().type === "number") {

@@ -516,8 +516,30 @@ export function toCNF(node: ASTNode): ASTNode {
 }
 
 // 9. Prevod na množinovú reprezentáciu
-export function flattenCNF(node: ASTNode): string[][] {
+export interface CNFResult {
+  clauses: string[][];
+  variables: string[];
+}
+
+export function flattenCNF(node: ASTNode): CNFResult {
   const clauses: string[][] = [];
+  const variables = new Set<string>();
+
+  function collectVariables(n: ASTNode) {
+    if (n.type === "Variable") {
+      variables.add(n.name);
+    } else if (n.type === "BinaryExpression") {
+      collectVariables(n.left);
+      collectVariables(n.right);
+    } else if (n.type === "UnaryExpression") {
+      collectVariables(n.operand);
+    } else if (n.type === "Quantifier") {
+      collectVariables(n.formula);
+    } else if (n.type === "Predicate" || n.type === "Function") {
+      n.args.forEach(collectVariables);
+    }
+  }
+  collectVariables(node);
 
   function collectClauses(n: ASTNode) {
     if (n.type === "BinaryExpression" && n.operator === "and") {
@@ -545,7 +567,7 @@ export function flattenCNF(node: ASTNode): string[][] {
   }
 
   collectClauses(node);
-  return clauses;
+  return { clauses, variables: Array.from(variables) };
 }
 
 // --- UTIL FUNCTIONS (STRING INTERFACE) ---

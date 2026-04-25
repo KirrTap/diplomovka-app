@@ -14,10 +14,11 @@ export interface Predicate {
 
 export type Substitution = Map<string, Term>;
 
-export function parseLiteralToPredicate(literal: string): Predicate {
+export function parseLiteralToPredicate(literal: string, variables: string[] = []): Predicate {
+  const knownVariables = new Set(variables);
   let isNegated = false;
   let str = literal.trim();
-  
+
   if (str.startsWith("¬")) {
     isNegated = true;
     str = str.substring(1).trim();
@@ -30,7 +31,7 @@ export function parseLiteralToPredicate(literal: string): Predicate {
 
   const name = str.substring(0, openParenIdx);
   const argsStr = str.substring(openParenIdx + 1, str.length - 1);
-  
+
   function parseTermString(termStr: string): Term {
     termStr = termStr.trim();
     const openIdx = termStr.indexOf("(");
@@ -67,15 +68,12 @@ export function parseLiteralToPredicate(literal: string): Predicate {
       };
     }
     
-    // Predicate variables logic: In some formalisms, variables are lowercase (x, y, z) 
-    // BUT in Prolog they are uppercase.
-    // Given your example f(x1,x3,x2), x1, x2, x3 are obviously meant to be VARIABLES!
-    // Let's treat it as a variable if it's an isolated lowercase 'x', 'y', 'z' (possibly with numbers) 
-    // OR if it starts with an Uppercase letter.
-    if (termStr.match(/^[A-Z]/) || termStr.match(/^[xyzw]\d*$/i)) {
+    // Premenná je IBA to, čo bolo viazané kvantifikátorom v pôvodnej formule.
+    // Zoznam knownVariables pochádza z flattenCNF, ktorý zbiera Variable uzly z AST.
+    if (knownVariables.has(termStr)) {
       return { type: "Variable", name: termStr };
     }
-    
+
     return { type: "Constant", name: termStr };
   }
 

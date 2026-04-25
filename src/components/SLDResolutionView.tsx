@@ -50,14 +50,14 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
       const skolemized = skolemize(pnf);
       const removedForall = removeForallQuantifiers(skolemized);
       const cnf = toCNF(removedForall);
-      const clauses = flattenCNF(cnf);
-      
+      const { clauses, variables } = flattenCNF(cnf);
+
       const sld = prepareSLD(clauses);
       let treeData;
       if (strategy === "bfs") {
-        treeData = generateSLDTreeBFS(sld.knowledgeBase, sld.goals);
+        treeData = generateSLDTreeBFS(sld.knowledgeBase, sld.goals, 15, variables);
       } else {
-        treeData = generateSLDTreeDFS(sld.knowledgeBase, sld.goals);
+        treeData = generateSLDTreeDFS(sld.knowledgeBase, sld.goals, 15, variables);
       }
       return { treeData, knowledgeBase: sld.knowledgeBase, goals: sld.goals, hitMaxDepth: treeData.hitMaxDepth };
     } catch {

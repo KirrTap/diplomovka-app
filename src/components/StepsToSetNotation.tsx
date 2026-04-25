@@ -45,7 +45,7 @@ export const StepsToSetNotation = ({
       const skolemized = skolemize(pnf);
       const removedForall = removeForallQuantifiers(skolemized);
       const cnf = toCNF(removedForall);
-      const clauses = flattenCNF(cnf);
+      const { clauses } = flattenCNF(cnf);
 
       return {
         parsed: stringifyAST(ast),
