@@ -28,7 +28,6 @@ export const StepsToSetNotation = ({
   const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Collapse when processing new tokens
   useEffect(() => {
     setIsExpanded(false);
   }, [tokens]);

@@ -462,14 +462,12 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
     throw new Error(`errors.error_expected_term|${getSymbolFromType(peek().type)}`);
   }
 
-  // Start
   const ast = parseExpression();
 
   if (peek().type !== "eof") {
     if (peek().type === "comma") {
       throw new Error("errors.error_unexpected_comma");
     }
-    // Ak sme vyparsovali výraz a stále nám niečo ostalo, narazili sme na token, ktorý tam nepatrí
     throw new Error(`errors.error_unexpected_token|${getSymbolFromType(peek().type)}`);
   }
 

@@ -59,7 +59,6 @@ const CustomSLDNode = ({ data }: { data: SLDNodeData }) => {
         zIndex: data.isHighlighted ? 100 : 1,
       }}
     >
-      {/* Hidden handles for edge connections */}
       <Handle type="target" position={Position.Top} style={{ background: 'transparent', border: 'none' }} />
       
       <div className="text-center break-words" style={{ fontSize: '10px', lineHeight: '1.2' }} title={data.label}>{data.label}</div>
@@ -107,10 +106,9 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
   const { t } = useLanguage();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const isLocked = false; // Povolené približovanie a posúvanie
+  const isLocked = false; 
   const { fitView } = useReactFlow();
 
-  // LaTeX modal state
   const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
   const [latexExportType, setLatexExportType] = useState<'document' | 'tree'>('tree');
   const [latexOrientation, setLatexOrientation] = useState<'portrait' | 'landscape'>('portrait');
@@ -122,18 +120,15 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
   const handleConfirmLatexCopy = () => {
     if (!treeData || treeData.nodes.length === 0) return;
 
-    // Convert the tree into a representation suitable for LaTeX forest
     const nodesMap = new Map(treeData.nodes.map(n => [n.id, n]));
     const childrenMap = new Map<string, typeof treeData.nodes>();
     const edgesMap = new Map(treeData.edges.map(e => [`${e.source}->${e.target}`, e]));
 
-    // Find root (node with no incoming edges)
     const hasIncoming = new Set(treeData.edges.map(e => e.target));
     const rootNodes = treeData.nodes.filter(n => !hasIncoming.has(n.id));
     if (rootNodes.length === 0) return;
     const root = rootNodes[0];
 
-    // Build children map
     treeData.edges.forEach(e => {
       const children = childrenMap.get(e.source) || [];
       const targetNode = nodesMap.get(e.target);
@@ -155,13 +150,8 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
       const isVisible = treeData.nodes.findIndex(n => n.id === nodeId) < visibleSteps;
       if (!isVisible) return "";
 
-      // We don't wrap the entire label in $...$ anymore, because formatLatexLabel does it per-predicate.
-      // This allows LaTeX's text width and centering algorithms to break lines between predicates!
       const label = formatLatexLabel(node.goals);
       let options: string[] = [];
-
-      // Removed colors entirely for LaTeX export, keep standard styling
-      // If needed, specific styling can be added back, but unified look is preferred.
 
       if (edgeToThisNode) {
         const edgeLabel = edgeToThisNode.label || "";
@@ -173,15 +163,12 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
 
       const optionsStr = options.length > 0 ? `, ${options.join(', ')}` : '';
       
-      // Enclose label in {} so that commas in goals do not break forest options parser!
       let result = `[{${label}}${optionsStr}`;
 
       const children = childrenMap.get(nodeId) || [];
       const visibleChildren = children.filter(c => treeData.nodes.findIndex(n => n.id === c.id) < visibleSteps);
 
-      // We no longer sort by X coordinate because dagre's internal X coordinate 
-      // might be right-to-left. Instead, we use the original order from treeData (DFS/BFS generation order), 
-      // which exactly matches the 1-to-1 top-down and left-to-right table order.
+      
       visibleChildren.sort((a, b) => {
         const idxA = treeData.nodes.findIndex(n => n.id === a.id);
         const idxB = treeData.nodes.findIndex(n => n.id === b.id);
@@ -285,7 +272,7 @@ ${treeLatex}
       if (node.status === "success") {
         bg = '#dcfce7';
         border = '#22c55e';
-        color = '#14532d'; // Dark green text in the tree
+        color = '#14532d';
       } else if (node.status === "failure") {
         bg = '#fee2e2';
         border = '#ef4444';
@@ -347,7 +334,6 @@ ${treeLatex}
   }, [treeData, visibleSteps, setNodes, setEdges, t, highlightedNodeId]);
 
   useEffect(() => {
-    // Vždy po zmene kroku počkáme kým sa vykreslí dom a vycentrujeme pohľad
     const timeout = setTimeout(() => {
       fitView({ duration: 400, padding: 0.2 });
     }, 50);
@@ -356,7 +342,6 @@ ${treeLatex}
 
   return (
     <div className="flex flex-col w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-      {/* Stepper bar inside the container header */}
       {treeData.nodes.length > 0 && (
         <div className="flex flex-wrap justify-between items-center bg-white p-4 border-b border-gray-200 gap-4">
           <div className="flex flex-wrap items-center gap-6">

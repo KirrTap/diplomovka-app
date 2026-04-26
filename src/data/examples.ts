@@ -1,5 +1,3 @@
-// examples.ts
-// Mapovanie názvov príkladov na ich obsah
 export const EXAMPLES: { labelKey: string; value: string }[] = [
   { 
     labelKey: "example_1", 

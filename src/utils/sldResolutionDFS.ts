@@ -2,20 +2,20 @@ import { parseLiteralToPredicate, unifyPredicates, applySubstitutionToPredicate,
 
 export interface SLDNode {
   id: string;
-  goals: Predicate[];     // Current resolvents (negative literals)
-  parent?: string;        // Parent node ID
-  usedRule?: string;      // The rule from KB used to get here
-  usedClauseIndex?: number; // Index of the KB clause used
-  subst?: Record<string, string>; // Substitutions made in this step
+  goals: Predicate[];     
+  parent?: string;        
+  usedRule?: string;      
+  usedClauseIndex?: number;
+  subst?: Record<string, string>; 
   status: "open" | "success" | "failure";
-  isFailLabel?: boolean;  // Specifies if this node is just a "Fail" termination node
+  isFailLabel?: boolean;  
 }
 
 export interface SLDEdge {
   id: string;
   source: string;
   target: string;
-  label: string; // The substitution or rule applied
+  label: string;
 }
 
 export interface SLDTreeData {
@@ -31,12 +31,8 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
 
   if (initialGoals.length === 0) return { nodes, edges, hitMaxDepth };
 
-  // Parse KB clauses into predicates
-  // KB clause format: ["parent(jozo, jano)"] or ["¬parent(X, Z)", "¬parent(Z, Y)", "grandparent(X, Y)"]
   const kbParsed = knowledgeBase.map(clause => clause.map(lit => parseLiteralToPredicate(lit, variables)));
 
-  // Initialize first node with the first goal clause
-  // Goals are negative, e.g. ["¬grandparent(jozo, Y)"]
   const rootGoals = initialGoals[0].map(lit => parseLiteralToPredicate(lit, variables));
   
   let nodeIdCounter = 0;
@@ -49,8 +45,6 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
   
   nodes.push(rootNode);
 
-  // Helper to rename variables in a KB rule to prevent accidental clashes across steps
-  // e.g. X becomes X_1, X_2 etc.
   function renameVariablesInClause(clause: Predicate[], suffix: number): Predicate[] {
     const renameTerm = (t: Term): Term => {
       if (t.type === "Variable") return { type: "Variable", name: `${t.name}_${suffix}` };
@@ -63,38 +57,32 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
     }));
   }
 
-  // Recursive DFS
+
   function explore(node: SLDNode, depth: number) {
     if (depth >= maxDepth) {
-      node.status = "failure"; // Cut off infinite loops
+      node.status = "failure"; 
       hitMaxDepth = true;
       return;
     }
 
     if (node.goals.length === 0) {
-      node.status = "success"; // Empty clause -> proof found!
+      node.status = "success"; 
       return;
     }
 
-    // Prolog standard: always resolve the FIRST goal (left-most)
     const currentGoal = node.goals[0];
     const remainingGoals = node.goals.slice(1);
     
-    // Unify currentGoal with the POSITIVE literal of each KB clause
-    // (A KB clause represents Head :- Body. Head is the positive literal).
     let hasChildren = false;
 
     for (let kbIdx = 0; kbIdx < kbParsed.length; kbIdx++) {
       const kbClause = renameVariablesInClause(kbParsed[kbIdx], nodeIdCounter);
       
-      // Loop through all literals in the KB clause
       for (let headIdx = 0; headIdx < kbClause.length; headIdx++) {
-        // Only consider literals with the opposite polarity
         if (kbClause[headIdx].isNegated === currentGoal.isNegated) continue;
         
         const head = kbClause[headIdx];
         
-        // Unify them ignoring the negation flag.
         const goalToUnify = { ...currentGoal, isNegated: false };
         const headToUnify = { ...head, isNegated: false };
         
@@ -103,16 +91,12 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
         if (subst) {
           hasChildren = true;
           
-          // Unification succeeded! Create new goals:
-          // 1. Take the body of the KB clause (all remaining literals)
           const kbBody = kbClause.filter((_, idx) => idx !== headIdx);
-          // Change them to pure predicates keeping their explicit negation flag for resolution
+
           const newSubGoals = kbBody.map(p => ({ ...p }));
         
-        // 2. Add remaining original goals
         const nextGoalsUnsubstituted = [...newSubGoals, ...remainingGoals];
         
-        // 3. Apply substitution to all next goals
         const nextGoals = nextGoalsUnsubstituted.map(g => applySubstitutionToPredicate(g, subst));
         
         const childId = `n${nodeIdCounter++}`;
@@ -126,19 +110,16 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
         
         nodes.push(childNode);
         
-        // Format substitution for the edge label
         const substStrings: string[] = [];
         const seenKeys = new Set<string>();
 
         subst.forEach((val, key) => {
-           // Získame pôvodné meno premennej bez internej prípony (napr. X_1 -> X)
            const cleanKey = key.replace(/_\d+$/, "");
            const cleanVal = termToString(val);
 
-           // Zobrazíme iba ak sa takáto premenná ešte nevyskytla, aby nevznikali duplikáty (napr X/jano a X/jano)
              if (!seenKeys.has(cleanKey)) {
                seenKeys.add(cleanKey);
-               substStrings.push(`${cleanVal}/${cleanKey}`); // term/premenná
+               substStrings.push(`${cleanVal}/${cleanKey}`); 
              }
         });
         
@@ -151,7 +132,6 @@ export function generateSLDTreeDFS(knowledgeBase: string[][], initialGoals: stri
           label: substStr
         });
 
-        // Continue DFS
         explore(childNode, depth + 1);
       }
       }

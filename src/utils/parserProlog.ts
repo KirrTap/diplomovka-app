@@ -66,7 +66,6 @@ function parsePrologTerm(tokens: LogicToken[]): ASTNode {
     throw new Error(`errors.error_prolog_unexpected_token|${t.type === 'unknown' ? t.value : t.type}`);
   }
 
-  // It must be a function
   const nameToken = tokens[0];
   if (nameToken.type !== "lower_id") {
     throw new Error(`errors.error_prolog_unexpected_token|${nameToken.type === 'unknown' ? nameToken.value : nameToken.type}`);
@@ -151,7 +150,6 @@ export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
     throw new Error("errors.error_prolog_empty_statement");
   }
 
-  // Split by fact (dot .)
   const statements: LogicToken[][] = [];
   let currentStmt: LogicToken[] = [];
   for (let i = 0; i < eofLessTokens.length; i++) {
@@ -172,9 +170,7 @@ export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
   let queryNode: ASTNode | null = null;
 
   for (const stmtTokens of statements) {
-    if (stmtTokens.length === 0) continue; // Skip empty statements (like double dots)
-
-    // Check if query
+    if (stmtTokens.length === 0) continue; 
     if (stmtTokens[0].type === "query") {
       if (queryNode !== null) {
         throw new Error("errors.error_prolog_multiple_queries");
@@ -214,7 +210,6 @@ export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
     kbNodes.push(ast);
   }
 
-  // Combine KB
   let kbAst: ASTNode | null = null;
   if (kbNodes.length > 0) {
     kbAst = kbNodes[0];

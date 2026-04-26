@@ -1,6 +1,3 @@
-// Predicate structure: { name: string, args: Term[] }
-// Term structure: { type: "Variable" | "Constant" | "Function", name: string, args?: Term[] }
-
 export type Term = 
   | { type: "Variable"; name: string }
   | { type: "Constant"; name: string }
@@ -36,7 +33,6 @@ export function parseLiteralToPredicate(literal: string, variables: string[] = [
     termStr = termStr.trim();
     const openIdx = termStr.indexOf("(");
     
-    // If it has parenthesis, it's a function
     if (openIdx !== -1 && termStr.endsWith(")")) {
       const funcName = termStr.substring(0, openIdx);
       const innerArgsStr = termStr.substring(openIdx + 1, termStr.length - 1);
@@ -68,8 +64,6 @@ export function parseLiteralToPredicate(literal: string, variables: string[] = [
       };
     }
     
-    // Premenná je IBA to, čo bolo viazané kvantifikátorom v pôvodnej formule.
-    // Zoznam knownVariables pochádza z flattenCNF, ktorý zbiera Variable uzly z AST.
     if (knownVariables.has(termStr)) {
       return { type: "Variable", name: termStr };
     }
@@ -106,7 +100,6 @@ export function parseLiteralToPredicate(literal: string, variables: string[] = [
 
 export function unifyTerms(t1: Term, t2: Term, subst: Substitution): boolean {
   if (t1.type === "Variable" && t2.type === "Variable") {
-    // If both are variables, prefer binding the clause variable (t2) to the goal variable (t1)
     return unifyVariable(t2.name, t1, subst);
   }
   if (t1.type === "Variable") {
@@ -125,7 +118,6 @@ export function unifyTerms(t1: Term, t2: Term, subst: Substitution): boolean {
       return false;
     }
     for (let i = 0; i < t1.args.length; i++) {
-      // Need to apply current substitution to terms before unifying them
       const arg1 = applySubstitutionToTerm(t1.args[i], subst);
       const arg2 = applySubstitutionToTerm(t2.args[i], subst);
       if (!unifyTerms(arg1, arg2, subst)) {
@@ -147,9 +139,8 @@ function unifyVariable(varName: string, term: Term, subst: Substitution): boolea
     return unifyTerms({ type: "Variable", name: varName }, subst.get(term.name)!, subst);
   }
   
-  // Occurs check (skip for simplicity unless needed, standard Prolog omits it)
   if (term.type === "Variable" && term.name === varName) {
-    return true; // X = X is trivially true
+    return true; 
   }
   
   subst.set(varName, term);
@@ -158,7 +149,7 @@ function unifyVariable(varName: string, term: Term, subst: Substitution): boolea
 
 export function unifyPredicates(p1: Predicate, p2: Predicate): Substitution | null {
   if (p1.name !== p2.name || p1.args.length !== p2.args.length) {
-    return null; // Cannot unify
+    return null; 
   }
   
   const subst: Substitution = new Map();
@@ -178,7 +169,6 @@ export function unifyPredicates(p1: Predicate, p2: Predicate): Substitution | nu
 export function applySubstitutionToTerm(term: Term, subst: Substitution): Term {
   if (term.type === "Variable") {
     if (subst.has(term.name)) {
-      // Recursively apply to handle chained substitutions X->Y, Y->a
       return applySubstitutionToTerm(subst.get(term.name)!, subst);
     }
     return term;
@@ -204,7 +194,6 @@ export function termToString(t: Term): string {
   if (t.type === "Function") {
     return `${t.name}(${t.args.map(termToString).join(", ")})`;
   }
-  // Remove the internal _number suffix for visualization (e.g., X_1 -> X)
   return t.name.replace(/_\d+$/, "");
 }
 

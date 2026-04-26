@@ -24,12 +24,10 @@ export function logicTokenize(rawInput: string): LogicToken[] {
 
   while (i < input.length) {
     const c = input[i];
-    // Skip whitespace
     if (c.match(/\s/)) {
       i++;
       continue;
     }
-    // Single-char tokens
     switch (c) {
       case "∧":
         tokens.push({ type: "and" });
@@ -68,20 +66,19 @@ export function logicTokenize(rawInput: string): LogicToken[] {
         i++;
         continue;
     }
-    // Multi-char tokens
-    // ?-
+
     if (c === "?" && input[i + 1] === "-") {
       tokens.push({ type: "query" });
       i += 2;
       continue;
     }
-    // =>
+
     if (c === "=" && input[i + 1] === ">") {
       tokens.push({ type: "implies" });
       i += 2;
       continue;
     }
-    // :- for rules
+
     if (c === ":" && input[i + 1] === "-") {
       tokens.push({ type: "rule" });
       i += 2;
@@ -109,7 +106,7 @@ export function logicTokenize(rawInput: string): LogicToken[] {
       }
       continue;
     }
-    // unknown
+
     tokens.push({ type: "unknown", value: c });
     i++;
   }

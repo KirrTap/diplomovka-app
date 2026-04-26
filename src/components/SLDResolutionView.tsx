@@ -32,7 +32,6 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
   const [visibleSteps, setVisibleSteps] = useState<number>(1);
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
 
-  // LaTeX modal state
   const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
   const [latexExportType, setLatexExportType] = useState<'document' | 'table'>('table');
   const [latexOrientation, setLatexOrientation] = useState<'portrait' | 'landscape'>('portrait');
@@ -66,8 +65,8 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
   }, [tokens, strategy]);
 
   useEffect(() => {
-    setVisibleSteps(1); // Reset steps when formula changes
-    setHighlightedNodeId(null); // Reset highlighted node
+    setVisibleSteps(1);
+    setHighlightedNodeId(null); 
     if (resolutionData && resolutionData.treeData && resolutionData.treeData.nodes.length > 0) {
       setTimeout(() => {
         containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -77,13 +76,12 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
 
   useEffect(() => {
     if (highlightedNodeId) {
-      // Scroll table row into view
+
       const row = document.getElementById(`row-${highlightedNodeId}`);
       if (row) {
         row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
-      // Ensure node is visible in tree
       if (resolutionData?.treeData) {
         const nodeIndex = resolutionData.treeData.nodes.findIndex(n => n.id === highlightedNodeId);
         if (nodeIndex !== -1 && nodeIndex + 1 > visibleSteps) {
@@ -93,7 +91,6 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
     }
   }, [highlightedNodeId, resolutionData, visibleSteps]);
 
-  // Show cycle modal when user reaches last step and hitMaxDepth is true
   useEffect(() => {
     if (resolutionData?.hitMaxDepth && visibleSteps >= resolutionData.treeData.nodes.length && resolutionData.treeData.nodes.length > 0) {
       setShowCycleModal(true);
@@ -153,13 +150,13 @@ ${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
 \\endhead
 `;
 
-    // Initial clauses
+   
     initialClauses.forEach((clause, idx) => {
       const clauseLatex = clause.join(", ").replace(/[~¬]/g, '\\neg ').replace(/_/g, '\\_');
       latex += `${idx + 1} & $${clauseLatex}$ & & \\\\\n\\hline\n`;
     });
 
-    // Derived steps
+   
     visibleNodes.slice(1).forEach((node, idx) => {
       let resolventText = "";
       if (node.goals.length === 0) {
@@ -201,8 +198,6 @@ ${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
   const initialClauses = [...goals, ...knowledgeBase];
   const visibleNodes = treeData.nodes.slice(0, visibleSteps);
 
-  // Vytvoríme mapovanie ID uzla na číslo kroku v tabuľke.
-  // Začiatočný cieľ (koreň) má číslo 1. Nové rezolventy majú čísla od initialClauses.length + 1.
   const stepMap: Record<string, number> = {};
   if (treeData.nodes.length > 0) {
     stepMap[treeData.nodes[0].id] = 1;
@@ -257,7 +252,6 @@ ${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
               </tr>
             </thead>
             <tbody>
-              {/* Zobrazenie počiatočných klauzúl (najprv ciele, potom báza znalostí) */}
               {initialClauses.map((clause, idx) => {
                 const isRootGoal = idx === 0;
                 const nodeId = isRootGoal && treeData.nodes.length > 0 ? treeData.nodes[0].id : null;
@@ -280,7 +274,6 @@ ${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
                 );
               })}
               
-              {/* Zobrazenie rezolventov odvodených zo stromu (odrezaná hlava = cieľová klauzula, ktorá je už vypísaná ako #1) */}
               {visibleNodes.slice(1).map((node, idx) => {
                 let resolventText = "";
                 let isSpecial = false;
@@ -298,7 +291,6 @@ ${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
                 
                 const edge = treeData.edges.find(e => e.target === node.id);
                 const unificationText = edge && edge.label ? edge.label : "";
-                // If the unification was exactly "{}", change it to "{ }" for readability
                 const displayUnificationText = unificationText === "{}" ? "{ }" : unificationText;
                 
                 const isHighlighted = highlightedNodeId === node.id;

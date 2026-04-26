@@ -5,9 +5,7 @@ import {
 } from "./parserStandard";
 import { logicTokenize } from "./tokenizer";
 
-// --- CORE TRANSFORMATIONS (AST → AST) ---
 
-// 1. Negácia formule
 export function negateFormula(ast: ASTNode): ASTNode {
   return {
     type: "UnaryExpression",
@@ -16,7 +14,6 @@ export function negateFormula(ast: ASTNode): ASTNode {
   };
 }
 
-// 2. Odstránenie implikácií
 export function replaceImplies(node: ASTNode): ASTNode {
   switch (node.type) {
     case "BinaryExpression":
@@ -62,7 +59,6 @@ export function replaceImplies(node: ASTNode): ASTNode {
   }
 }
 
-// 3. Negatívna normálna forma (NNF)
 export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
   if (negated) {
     switch (node.type) {
@@ -135,7 +131,6 @@ export function toNNF(node: ASTNode, negated: boolean = false): ASTNode {
   return node;
 }
 
-// 4. Štandardizácia (unikátne premenné)
 export function renameQuantifierVariables(ast: ASTNode): ASTNode {
   const globalUsed: Set<string> = new Set();
 
@@ -194,7 +189,6 @@ export function renameQuantifierVariables(ast: ASTNode): ASTNode {
   return traverse(ast, new Map());
 }
 
-// 5. Prenexná normálna forma (PNF)
 export function toPNF(node: ASTNode): ASTNode {
   const quantifiers: { symbol: "forall" | "exists"; variable: string; order: number }[] = [];
   let orderCounter = 0;
@@ -302,7 +296,6 @@ export function toPNF(node: ASTNode): ASTNode {
   return result;
 }
 
-// 6. Skolemizácia (SNF)
 export function skolemize(ast: ASTNode): ASTNode {
   const globalUsed: Set<string> = new Set();
 
@@ -409,7 +402,6 @@ export function skolemize(ast: ASTNode): ASTNode {
   return transform(ast, [], new Map());
 }
 
-// 7. Vynechanie všeobecných kvantifikátorov
 export function removeForallQuantifiers(ast: ASTNode): ASTNode {
   switch (ast.type) {
     case "Quantifier":
@@ -443,7 +435,6 @@ export function removeForallQuantifiers(ast: ASTNode): ASTNode {
   }
 }
 
-// 8. Konjunktívna normálna forma (CNF)
 export function toCNF(node: ASTNode): ASTNode {
   switch (node.type) {
     case "BinaryExpression":
@@ -515,7 +506,6 @@ export function toCNF(node: ASTNode): ASTNode {
   }
 }
 
-// 9. Prevod na množinovú reprezentáciu
 export interface CNFResult {
   clauses: string[][];
   variables: string[];
@@ -570,7 +560,6 @@ export function flattenCNF(node: ASTNode): CNFResult {
   return { clauses, variables: Array.from(variables) };
 }
 
-// --- UTIL FUNCTIONS (STRING INTERFACE) ---
 
 export function stringifyNegated(ast: ASTNode): string {
   if (ast.type === "UnaryExpression" && ast.operator === "not") {
