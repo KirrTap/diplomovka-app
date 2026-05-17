@@ -17,7 +17,7 @@
     "error_unexpected_variable": "Premenná '{value}' nemôže vystupovať samostatne",
     "error_unexpected_token": "Neočekávaný symbol: {value}",
     "error_parentheses": "Problém s závorkami",
-    
+
     "unexpected_combination_operators": "Neočekávaná kombinácia operátorov",
     "error_expected_term": "Očakával sa term (premenná, konštanta alebo funkcia), ale našlo sa {value}",
     "error_prolog_missing_dot": "Chýba bodka na konci prologovského príkazu.",
@@ -26,6 +26,7 @@
     "error_prolog_predicate_lowercase": "Predikáty v Prologu musia začínať malým písmenom: '{value}'",
     "error_prolog_empty_statement": "Prázdny príkaz pred bodkou.",
     "error_prolog_unexpected_token": "Neočekávaný symbol v Prologu: '{value}'",
+    "error_prolog_cut_outside_rule": "Neplatné použitie cut (!). Cut môže byť len v tele pravidla.",
     "error_prolog_invalid_predicate": "Neplatný formát predikátu.",
     "error_prolog_invalid_term": "Neplatný formát termu.",
     "error_prolog_missing_query": "Chýba cieľ (?-)."
@@ -76,6 +77,15 @@
   "export_latex_landscape": "Na šírku",
   "export_table_latex": "Generovať LaTeX Tabuľku",
   "export_tree_latex": "Generovať LaTeX Strom",
+  "show_all_branches": "Ukázať vetvy bez rezu",
+  "hide_all_branches": "Skryť vetvy bez rezu",
+  "fullscreen_enter": "Celá obrazovka",
+  "fullscreen_exit": "Zatvoriť celú obrazovku",
+  "controls": {
+    "zoom_in": "Priblížiť",
+    "zoom_out": "Oddialiť",
+    "fit_view": "Prispôsobiť zobrazenie"
+  },
   "latex_export_warning": "POZOR: Uisti sa, že máš v hlavičke dokumentu (pred \\begin{document}) pridané tieto balíčky:",
   "cancel": "Zrušiť",
   "copy": "Kopírovať",

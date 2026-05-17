@@ -2,3 +2,8 @@
 
 @theme {
 }
+
+.react-flow__controls-button svg {
+  max-width: 18px !important;
+  max-height: 18px !important;
+}

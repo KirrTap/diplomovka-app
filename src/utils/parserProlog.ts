@@ -7,17 +7,24 @@ function parsePrologPredicate(tokens: LogicToken[]): ASTNode {
   }
   const nameToken = tokens[0];
   if (nameToken.type === "upper_id") {
-    throw new Error(`errors.error_prolog_predicate_lowercase|${nameToken.value}`);
+    throw new Error(
+      `errors.error_prolog_predicate_lowercase|${nameToken.value}`,
+    );
   }
   if (nameToken.type !== "lower_id") {
-    throw new Error(`errors.error_prolog_unexpected_token|${nameToken.type === 'unknown' ? nameToken.value : nameToken.type}`);
+    throw new Error(
+      `errors.error_prolog_unexpected_token|${nameToken.type === "unknown" ? nameToken.value : nameToken.type}`,
+    );
   }
 
   if (tokens.length === 1) {
     return { type: "Predicate", name: nameToken.value, args: [] };
   }
 
-  if (tokens[1].type !== "lparen" || tokens[tokens.length - 1].type !== "rparen") {
+  if (
+    tokens[1].type !== "lparen" ||
+    tokens[tokens.length - 1].type !== "rparen"
+  ) {
     throw new Error("errors.error_prolog_invalid_predicate");
   }
 
@@ -29,14 +36,15 @@ function parsePrologPredicate(tokens: LogicToken[]): ASTNode {
 
   let depth = 0;
   let currentArg: LogicToken[] = [];
-  
+
   for (let i = 0; i < innerTokens.length; i++) {
     const t = innerTokens[i];
     if (t.type === "lparen") depth++;
     else if (t.type === "rparen") depth--;
 
     if (t.type === "comma" && depth === 0) {
-      if (currentArg.length === 0) throw new Error("errors.error_unexpected_comma");
+      if (currentArg.length === 0)
+        throw new Error("errors.error_unexpected_comma");
       args.push(parsePrologTerm(currentArg));
       currentArg = [];
     } else {
@@ -51,10 +59,13 @@ function parsePrologPredicate(tokens: LogicToken[]): ASTNode {
 
 function parsePrologTerm(tokens: LogicToken[]): ASTNode {
   if (tokens.length === 0) throw new Error("errors.error_prolog_invalid_term");
-  
+
   if (tokens.length === 1) {
     const t = tokens[0];
-    if (t.type === "upper_id" || (t.type === "lower_id" && t.value.startsWith("_"))) {
+    if (
+      t.type === "upper_id" ||
+      (t.type === "lower_id" && t.value.startsWith("_"))
+    ) {
       return { type: "Variable", name: t.value };
     }
     if (t.type === "number") {
@@ -63,14 +74,21 @@ function parsePrologTerm(tokens: LogicToken[]): ASTNode {
     if (t.type === "lower_id") {
       return { type: "Constant", name: t.value };
     }
-    throw new Error(`errors.error_prolog_unexpected_token|${t.type === 'unknown' ? t.value : t.type}`);
+    throw new Error(
+      `errors.error_prolog_unexpected_token|${t.type === "unknown" ? t.value : t.type}`,
+    );
   }
 
   const nameToken = tokens[0];
   if (nameToken.type !== "lower_id") {
-    throw new Error(`errors.error_prolog_unexpected_token|${nameToken.type === 'unknown' ? nameToken.value : nameToken.type}`);
+    throw new Error(
+      `errors.error_prolog_unexpected_token|${nameToken.type === "unknown" ? nameToken.value : nameToken.type}`,
+    );
   }
-  if (tokens[1].type !== "lparen" || tokens[tokens.length - 1].type !== "rparen") {
+  if (
+    tokens[1].type !== "lparen" ||
+    tokens[tokens.length - 1].type !== "rparen"
+  ) {
     throw new Error("errors.error_prolog_invalid_term");
   }
 
@@ -86,7 +104,8 @@ function parsePrologTerm(tokens: LogicToken[]): ASTNode {
     else if (t.type === "rparen") depth--;
 
     if (t.type === "comma" && depth === 0) {
-      if (currentArg.length === 0) throw new Error("errors.error_unexpected_comma");
+      if (currentArg.length === 0)
+        throw new Error("errors.error_unexpected_comma");
       args.push(parsePrologTerm(currentArg));
       currentArg = [];
     } else {
@@ -110,14 +129,16 @@ function parsePrologBody(tokens: LogicToken[]): ASTNode {
     else if (t.type === "rparen") depth--;
 
     if (t.type === "comma" && depth === 0) {
-      if (currentLiteral.length === 0) throw new Error("errors.error_unexpected_comma");
+      if (currentLiteral.length === 0)
+        throw new Error("errors.error_unexpected_comma");
       literals.push(parsePrologLiteral(currentLiteral));
       currentLiteral = [];
     } else {
       currentLiteral.push(t);
     }
   }
-  if (currentLiteral.length === 0) throw new Error("errors.error_unexpected_comma");
+  if (currentLiteral.length === 0)
+    throw new Error("errors.error_unexpected_comma");
   literals.push(parsePrologLiteral(currentLiteral));
 
   let ast = literals[0];
@@ -126,26 +147,30 @@ function parsePrologBody(tokens: LogicToken[]): ASTNode {
       type: "BinaryExpression",
       operator: "and",
       left: ast,
-      right: literals[i]
+      right: literals[i],
     };
   }
   return ast;
 }
 
 function parsePrologLiteral(tokens: LogicToken[]): ASTNode {
-  if (tokens.length === 0) throw new Error("errors.error_prolog_invalid_predicate");
+  if (tokens.length === 0)
+    throw new Error("errors.error_prolog_invalid_predicate");
   if (tokens[0].type === "not") {
     return {
       type: "UnaryExpression",
       operator: "not",
-      operand: parsePrologPredicate(tokens.slice(1))
+      operand: parsePrologPredicate(tokens.slice(1)),
     };
+  }
+  if (tokens.length === 1 && tokens[0].type === "cut") {
+    return { type: "Cut" };
   }
   return parsePrologPredicate(tokens);
 }
 
 export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
-  const eofLessTokens = tokens.filter(t => t.type !== "eof");
+  const eofLessTokens = tokens.filter((t) => t.type !== "eof");
   if (eofLessTokens.length === 0) {
     throw new Error("errors.error_prolog_empty_statement");
   }
@@ -170,20 +195,20 @@ export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
   let queryNode: ASTNode | null = null;
 
   for (const stmtTokens of statements) {
-    if (stmtTokens.length === 0) continue; 
+    if (stmtTokens.length === 0) continue;
     if (stmtTokens[0].type === "query") {
       if (queryNode !== null) {
         throw new Error("errors.error_prolog_multiple_queries");
       }
       const bodyTokens = stmtTokens.slice(1);
       const ast = parsePrologBody(bodyTokens);
-      
+
       queryNode = ast;
       continue;
     }
 
     // Check if rule
-    const ruleIndex = stmtTokens.findIndex(t => t.type === "rule");
+    const ruleIndex = stmtTokens.findIndex((t) => t.type === "rule");
     if (ruleIndex !== -1) {
       if (ruleIndex === 0 || ruleIndex === stmtTokens.length - 1) {
         throw new Error("errors.error_prolog_invalid_rule");
@@ -198,7 +223,7 @@ export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
         type: "BinaryExpression",
         operator: "implies",
         left: bodyAst,
-        right: headAst
+        right: headAst,
       };
 
       kbNodes.push(ast);
@@ -206,6 +231,10 @@ export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
     }
 
     // Otherwise it's a fact
+    // Ak je v stmtTokens cut (!), vyhoď špeciálnu chybu
+    if (stmtTokens.some((t) => t.type === "cut")) {
+      throw new Error("errors.error_prolog_cut_outside_rule");
+    }
     const ast = parsePrologPredicate(stmtTokens);
     kbNodes.push(ast);
   }
@@ -218,7 +247,7 @@ export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
         type: "BinaryExpression",
         operator: "and",
         left: kbAst,
-        right: kbNodes[i]
+        right: kbNodes[i],
       };
     }
   }
@@ -228,7 +257,7 @@ export function parsePrologFormula(tokens: LogicToken[]): ASTNode {
       type: "BinaryExpression",
       operator: "implies",
       left: kbAst,
-      right: queryNode
+      right: queryNode,
     };
   } else if (queryNode) {
     return queryNode;

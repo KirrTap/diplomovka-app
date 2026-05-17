@@ -95,9 +95,9 @@ export function generateSLDTreeBFS(knowledgeBase: string[][], initialGoals: stri
            const cleanKey = key.replace(/_\d+$/, "");
            const cleanVal = termToString(val);
 
-             if (!seenKeys.has(cleanKey)) {
+             if (!seenKeys.has(cleanKey) && cleanVal !== cleanKey) {
                seenKeys.add(cleanKey);
-               substStrings.push(`${cleanVal}/${cleanKey}`); 
+               substStrings.push(`${cleanVal}/${cleanKey}`);
              }
         });
         

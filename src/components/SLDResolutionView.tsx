@@ -32,6 +32,14 @@ export const SLDResolutionView = ({ tokens, strategy, onStrategyChange }: SLDRes
   const [visibleSteps, setVisibleSteps] = useState<number>(1);
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
 
+  const hasCut = useMemo(() => tokens.some(tok => tok.type === "cut"), [tokens]);
+  const [showAllBranches, setShowAllBranches] = useState(false);
+
+  useEffect(() => {
+    if (hasCut && strategy === "bfs") onStrategyChange("dfs");
+    if (!hasCut) setShowAllBranches(false);
+  }, [hasCut, strategy, onStrategyChange]);
+
   const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
   const [latexExportType, setLatexExportType] = useState<'document' | 'table'>('table');
   const [latexOrientation, setLatexOrientation] = useState<'portrait' | 'landscape'>('portrait');
@@ -228,6 +236,9 @@ ${latexOrientation === 'landscape' ? '\\usepackage{pdflscape}\n' : ''}
           }}
           strategy={strategy}
           onStrategyChange={onStrategyChange}
+          hasCut={hasCut}
+          showAllBranches={showAllBranches}
+          onToggleAllBranches={() => setShowAllBranches(v => !v)}
         />
       </div>
 

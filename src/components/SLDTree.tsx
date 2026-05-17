@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ReactFlow,
   useNodesState,
   useEdgesState,
   Background,
   Controls,
+  ControlButton,
   Handle,
   Position,
   ReactFlowProvider,
@@ -27,6 +28,9 @@ interface SLDTreeProps {
   onNodeClick?: (nodeId: string) => void;
   strategy: "dfs" | "bfs";
   onStrategyChange: (strategy: "dfs" | "bfs") => void;
+  hasCut?: boolean;
+  showAllBranches?: boolean;
+  onToggleAllBranches?: () => void;
 }
 
 const nodeWidth = 200;
@@ -102,16 +106,51 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => 
   return { nodes: layoutedNodes, edges };
 };
 
-const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick, strategy, onStrategyChange }: SLDTreeProps) => {
+const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick, strategy, onStrategyChange, hasCut, showAllBranches, onToggleAllBranches }: SLDTreeProps) => {
   const { t } = useLanguage();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const isLocked = false; 
-  const { fitView } = useReactFlow();
+  const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const [fitViewTrigger, setFitViewTrigger] = useState(0);
 
   const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
   const [latexExportType, setLatexExportType] = useState<'document' | 'tree'>('tree');
   const [latexOrientation, setLatexOrientation] = useState<'portrait' | 'landscape'>('portrait');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const effectiveTreeNodes = useMemo(
+    () => showAllBranches ? treeData.nodes : treeData.nodes.filter(n => !n.isPruned),
+    [treeData, showAllBranches]
+  );
+  const effectiveTreeEdges = useMemo(
+    () => showAllBranches ? treeData.edges : treeData.edges.filter(e => !e.isPruned),
+    [treeData, showAllBranches]
+  );
+  const effectiveMax = effectiveTreeNodes.length;
+
+  useEffect(() => {
+    if (visibleSteps > effectiveMax && effectiveMax > 0) {
+      setVisibleSteps(effectiveMax);
+    }
+  }, [effectiveMax, visibleSteps, setVisibleSteps]);
+
+  useEffect(() => {
+    if (effectiveMax > 0) {
+      setVisibleSteps(effectiveMax);
+      setFitViewTrigger(t => t + 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showAllBranches]);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsFullscreen(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isFullscreen]);
 
   const copyTreeToLatex = () => {
     setIsLatexModalOpen(true);
@@ -120,16 +159,18 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
   const handleConfirmLatexCopy = () => {
     if (!treeData || treeData.nodes.length === 0) return;
 
+    const visibleNodeIds = new Set(effectiveTreeNodes.slice(0, visibleSteps).map(n => n.id));
+
     const nodesMap = new Map(treeData.nodes.map(n => [n.id, n]));
     const childrenMap = new Map<string, typeof treeData.nodes>();
-    const edgesMap = new Map(treeData.edges.map(e => [`${e.source}->${e.target}`, e]));
+    const edgesMap = new Map(effectiveTreeEdges.map(e => [`${e.source}->${e.target}`, e]));
 
-    const hasIncoming = new Set(treeData.edges.map(e => e.target));
-    const rootNodes = treeData.nodes.filter(n => !hasIncoming.has(n.id));
+    const hasIncoming = new Set(effectiveTreeEdges.map(e => e.target));
+    const rootNodes = effectiveTreeNodes.filter(n => !hasIncoming.has(n.id));
     if (rootNodes.length === 0) return;
     const root = rootNodes[0];
 
-    treeData.edges.forEach(e => {
+    effectiveTreeEdges.forEach(e => {
       const children = childrenMap.get(e.source) || [];
       const targetNode = nodesMap.get(e.target);
       if (targetNode) {
@@ -147,8 +188,7 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
       const node = nodesMap.get(nodeId);
       if (!node) return "";
       
-      const isVisible = treeData.nodes.findIndex(n => n.id === nodeId) < visibleSteps;
-      if (!isVisible) return "";
+      if (!visibleNodeIds.has(nodeId)) return "";
 
       const label = formatLatexLabel(node.goals);
       let options: string[] = [];
@@ -166,12 +206,11 @@ const SLDTreeContent = ({ treeData, visibleSteps, setVisibleSteps, highlightedNo
       let result = `[{${label}}${optionsStr}`;
 
       const children = childrenMap.get(nodeId) || [];
-      const visibleChildren = children.filter(c => treeData.nodes.findIndex(n => n.id === c.id) < visibleSteps);
+      const visibleChildren = children.filter(c => visibleNodeIds.has(c.id));
 
-      
       visibleChildren.sort((a, b) => {
-        const idxA = treeData.nodes.findIndex(n => n.id === a.id);
-        const idxB = treeData.nodes.findIndex(n => n.id === b.id);
+        const idxA = effectiveTreeNodes.findIndex(n => n.id === a.id);
+        const idxB = effectiveTreeNodes.findIndex(n => n.id === b.id);
         return idxA - idxB;
       });
 
@@ -257,19 +296,20 @@ ${treeLatex}
   useEffect(() => {
     if (!treeData || treeData.nodes.length === 0) return;
 
-    const initialNodes: Node[] = treeData.nodes.map((node, index) => {
-      let goalsText = "";
-      if (node.goals.length === 0) {
-        goalsText = "□";
-      } else {
-        goalsText = node.goals.map(g => predicateToString(g)).join(', ');
-      }
-        
+    const initialNodes: Node[] = effectiveTreeNodes.map((node, index) => {
+      const goalsText = node.goals.length === 0
+        ? "□"
+        : node.goals.map(g => predicateToString(g)).join(', ');
+
       let bg = '#ffffff';
       let border = '#d1d5db';
       let color = '#111827';
-      
-      if (node.status === "success") {
+
+      if (node.isPruned) {
+        bg = '#f3f4f6';
+        border = '#9ca3af';
+        color = '#6b7280';
+      } else if (node.status === "success") {
         bg = '#dcfce7';
         border = '#22c55e';
         color = '#14532d';
@@ -281,39 +321,34 @@ ${treeLatex}
 
       return {
         id: node.id,
-        data: { 
-          label: goalsText,
-          bg,
-          border,
-          color,
-          step: index + 1,
-          isHighlighted: node.id === highlightedNodeId
-        },
+        data: { label: goalsText, bg, border, color, step: index + 1, isHighlighted: node.id === highlightedNodeId },
         position: { x: 0, y: 0 },
         type: "sldNode",
       };
     });
 
-    const initialEdges: Edge[] = treeData.edges.map((edge) => {
+    const initialEdges: Edge[] = effectiveTreeEdges.map((edge) => {
       const isTargetHighlighted = edge.target === highlightedNodeId;
+      const isPruned = edge.isPruned;
       return {
         id: edge.id,
         source: edge.source,
         target: edge.target,
         label: edge.label,
         type: 'smoothstep',
-        labelStyle: { 
-          fill: isTargetHighlighted ? '#2563eb' : '#374151', 
-          fontWeight: isTargetHighlighted ? 700 : 500 
+        labelStyle: {
+          fill: isPruned ? '#9ca3af' : isTargetHighlighted ? '#2563eb' : '#374151',
+          fontWeight: isTargetHighlighted ? 700 : 500,
         },
-        labelBgStyle: { 
-          fill: isTargetHighlighted ? '#dbeafe' : '#f3f4f6', 
-          stroke: isTargetHighlighted ? '#3b82f6' : '#d1d5db' 
+        labelBgStyle: {
+          fill: isPruned ? '#f3f4f6' : isTargetHighlighted ? '#dbeafe' : '#f3f4f6',
+          stroke: isPruned ? '#e5e7eb' : isTargetHighlighted ? '#3b82f6' : '#d1d5db',
         },
-        animated: true,
+        animated: !isPruned,
         style: {
-          stroke: isTargetHighlighted ? '#3b82f6' : '#b1b1b7',
+          stroke: isPruned ? '#d1d5db' : isTargetHighlighted ? '#3b82f6' : '#b1b1b7',
           strokeWidth: isTargetHighlighted ? 3 : 1,
+          strokeDasharray: isPruned ? '6 4' : undefined,
         },
       };
     });
@@ -323,31 +358,32 @@ ${treeLatex}
       initialEdges
     );
 
-    const currentNodesData = treeData.nodes.slice(0, visibleSteps);
-    const visibleNodeIds = new Set(currentNodesData.map(n => n.id));
-
+    const visibleNodeIds = new Set(effectiveTreeNodes.slice(0, visibleSteps).map(n => n.id));
     const visibleNodes = layoutedNodes.filter(n => visibleNodeIds.has(n.id));
     const visibleEdges = layoutedEdges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
 
     setNodes(visibleNodes);
     setEdges(visibleEdges);
-  }, [treeData, visibleSteps, setNodes, setEdges, t, highlightedNodeId]);
+  }, [effectiveTreeNodes, effectiveTreeEdges, visibleSteps, setNodes, setEdges, t, highlightedNodeId]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       fitView({ duration: 400, padding: 0.2 });
     }, 50);
     return () => clearTimeout(timeout);
-  }, [visibleSteps, fitView]);
+  }, [visibleSteps, fitViewTrigger, fitView]);
 
   return (
-    <div className="flex flex-col w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className={isFullscreen
+      ? "fixed inset-0 z-50 flex flex-col bg-white"
+      : "flex flex-col w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+    }>
       {treeData.nodes.length > 0 && (
         <div className="flex flex-wrap justify-between items-center bg-white p-4 border-b border-gray-200 gap-4">
           <div className="flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-3">
               <h3 className="font-bold text-lg text-gray-700 whitespace-nowrap">{t("sld_tree")}</h3>
-              <button 
+              <button
                 onClick={copyTreeToLatex}
                 className="px-5 py-1.5 min-w-[140px] bg-purple-600 text-white rounded-md border border-purple-600 shadow-sm hover:bg-purple-700 hover:border-purple-700 font-bold transition-all text-sm"
               >
@@ -358,6 +394,9 @@ ${treeLatex}
               <SearchStrategySwitcher
                 strategy={strategy}
                 setStrategy={onStrategyChange}
+                hasCut={hasCut}
+                showAllBranches={showAllBranches}
+                onToggleAllBranches={onToggleAllBranches}
               />
             </div>
           </div>
@@ -370,19 +409,19 @@ ${treeLatex}
               {t("stepper.prev")}
             </button>
             <span className="text-sm font-semibold whitespace-nowrap min-w-[90px] text-center text-gray-700">
-              {t("stepper.step")} {visibleSteps} / {treeData.nodes.length}
+              {t("stepper.step")} {visibleSteps} / {effectiveMax}
             </span>
-            <button 
+            <button
               className="px-5 py-1.5 min-w-[120px] bg-blue-600 text-white rounded-md border border-blue-600 shadow-sm hover:bg-blue-700 hover:border-blue-700 font-bold disabled:opacity-50 transition-all text-sm"
-              disabled={visibleSteps >= treeData.nodes.length}
-              onClick={() => setVisibleSteps(v => Math.min(treeData.nodes.length, v + 1))}
+              disabled={visibleSteps >= effectiveMax}
+              onClick={() => setVisibleSteps(v => Math.min(effectiveMax, v + 1))}
             >
               {t("stepper.next")}
             </button>
             <div className="hidden sm:block w-[1px] h-8 bg-gray-300 mx-1"></div>
-            <button 
+            <button
               className="px-5 py-1.5 min-w-[140px] bg-green-600 text-white rounded-md border border-green-600 shadow-md hover:shadow-lg hover:bg-green-700 hover:border-green-700 font-bold transition-all text-sm"
-              onClick={() => setVisibleSteps(treeData.nodes.length)}
+              onClick={() => { setVisibleSteps(effectiveMax); setFitViewTrigger(t => t + 1); }}
             >
               {t("stepper.show_all")}
             </button>
@@ -390,7 +429,7 @@ ${treeLatex}
         </div>
       )}
 
-      <div className="w-full h-[700px] relative bg-white">
+      <div className={isFullscreen ? "flex-1 relative bg-white" : "w-full h-[700px] relative bg-white"}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -408,7 +447,44 @@ ${treeLatex}
           zoomOnDoubleClick={!isLocked}
         >
           <Background />
-          <Controls showInteractive={false} />
+          <Controls showZoom={false} showFitView={false} showInteractive={false}>
+            <ControlButton onClick={() => zoomIn()} title={t("controls.zoom_in")}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ width: 22, height: 22 }}>
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </ControlButton>
+            <ControlButton onClick={() => zoomOut()} title={t("controls.zoom_out")}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ width: 22, height: 22 }}>
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </ControlButton>
+            <ControlButton onClick={() => fitView({ duration: 400, padding: 0.2 })} title={t("controls.fit_view")}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 22, height: 22 }}>
+                <path d="M3 9V5a2 2 0 0 1 2-2h4" />
+                <path d="M15 3h4a2 2 0 0 1 2 2v4" />
+                <path d="M21 15v4a2 2 0 0 1-2 2h-4" />
+                <path d="M9 21H5a2 2 0 0 1-2-2v-4" />
+              </svg>
+            </ControlButton>
+            <ControlButton onClick={() => setIsFullscreen(f => !f)} title={isFullscreen ? t("fullscreen_exit") : t("fullscreen_enter")}>
+              {isFullscreen ? (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 22, height: 22 }}>
+                  <polyline points="4 14 10 14 10 20" />
+                  <polyline points="20 10 14 10 14 4" />
+                  <line x1="10" y1="14" x2="3" y2="21" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 22, height: 22 }}>
+                  <polyline points="15 3 21 3 21 9" />
+                  <polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
+              )}
+            </ControlButton>
+          </Controls>
         </ReactFlow>
       </div>
 
@@ -455,17 +531,20 @@ ${treeLatex}
   );
 };
 
-export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick, strategy, onStrategyChange }: SLDTreeProps) => {
+export const SLDTree = ({ treeData, visibleSteps, setVisibleSteps, highlightedNodeId, onNodeClick, strategy, onStrategyChange, hasCut, showAllBranches, onToggleAllBranches }: SLDTreeProps) => {
   return (
     <ReactFlowProvider>
-      <SLDTreeContent 
-        treeData={treeData} 
-        visibleSteps={visibleSteps} 
-        setVisibleSteps={setVisibleSteps} 
+      <SLDTreeContent
+        treeData={treeData}
+        visibleSteps={visibleSteps}
+        setVisibleSteps={setVisibleSteps}
         highlightedNodeId={highlightedNodeId}
-        onNodeClick={onNodeClick} 
+        onNodeClick={onNodeClick}
         strategy={strategy}
         onStrategyChange={onStrategyChange}
+        hasCut={hasCut}
+        showAllBranches={showAllBranches}
+        onToggleAllBranches={onToggleAllBranches}
       />
     </ReactFlowProvider>
   );

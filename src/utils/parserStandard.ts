@@ -21,7 +21,7 @@ export type ASTNode =
 
 export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
   const hasLogicalOperator = tokens.some(
-    (t) => t.type === "and" || t.type === "or" || t.type === "implies"
+    (t) => t.type === "and" || t.type === "or" || t.type === "implies",
   );
   if (!hasLogicalOperator) {
     throw new Error("errors.error_no_binary_connective");
@@ -34,20 +34,29 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
 
   function getSymbolFromType(type: LogicToken["type"]): string {
     switch (type) {
-      case "and": return "∧";
-      case "or": return "∨";
-      case "implies": return "=>";
-      case "not": return "¬";
-      case "forall": return "∀";
-      case "exists": return "∃";
-      default: return type;
+      case "and":
+        return "∧";
+      case "or":
+        return "∨";
+      case "implies":
+        return "=>";
+      case "not":
+        return "¬";
+      case "forall":
+        return "∀";
+      case "exists":
+        return "∃";
+      default:
+        return type;
     }
   }
 
   function eat(type: LogicToken["type"]): void {
     if (tokens[pos].type === type) pos++;
     else {
-      throw new Error(`errors.error_unexpected_token|${getSymbolFromType(tokens[pos].type)}`);
+      throw new Error(
+        `errors.error_unexpected_token|${getSymbolFromType(tokens[pos].type)}`,
+      );
     }
   }
 
@@ -65,7 +74,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         peek().type === "rparen" ||
         peek().type === "comma"
       ) {
-        throw new Error(`errors.error_missing_right_side|${getSymbolFromType(op)}`);
+        throw new Error(
+          `errors.error_missing_right_side|${getSymbolFromType(op)}`,
+        );
       }
       const right = parseImplication();
       node = {
@@ -88,7 +99,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         peek().type === "rparen" ||
         peek().type === "comma"
       ) {
-        throw new Error(`errors.error_missing_right_side|${getSymbolFromType(op)}`);
+        throw new Error(
+          `errors.error_missing_right_side|${getSymbolFromType(op)}`,
+        );
       }
       const right = parseDisjunction();
       node = { type: "BinaryExpression", operator: "or", left: node, right };
@@ -102,7 +115,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
       peek().type === "or" ||
       peek().type === "implies"
     ) {
-      throw new Error(`errors.error_missing_left_side|${getSymbolFromType(peek().type)}`);
+      throw new Error(
+        `errors.error_missing_left_side|${getSymbolFromType(peek().type)}`,
+      );
     }
     let node = parseNegation();
     while (peek().type === "and") {
@@ -113,7 +128,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         peek().type === "rparen" ||
         peek().type === "comma"
       ) {
-        throw new Error(`errors.error_missing_right_side|${getSymbolFromType(op)}`);
+        throw new Error(
+          `errors.error_missing_right_side|${getSymbolFromType(op)}`,
+        );
       }
       const right = parseConjunction();
       node = { type: "BinaryExpression", operator: "and", left: node, right };
@@ -130,7 +147,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         peek().type === "rparen" ||
         peek().type === "comma"
       ) {
-        throw new Error(`errors.error_missing_right_side|${getSymbolFromType(op)}`);
+        throw new Error(
+          `errors.error_missing_right_side|${getSymbolFromType(op)}`,
+        );
       }
       const operand = parseNegation();
       return { type: "UnaryExpression", operator: "not", operand };
@@ -157,7 +176,7 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
 
   function parseQuantifier(): ASTNode {
     const current = peek();
-    
+
     if (current.type === "forall" || current.type === "exists") {
       throw new Error("errors.error_invalid_quantifier_format");
     }
@@ -168,18 +187,18 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         eat("lparen");
         const symbol = peek().type as "forall" | "exists";
         eat(symbol);
-        
+
         if (peek().type !== "lower_id" && peek().type !== "upper_id")
           throw new Error("errors.quantifier_variable_missing");
         const varTokenType = peek().type as "lower_id" | "upper_id";
         const variable = (peek() as any).value;
         eat(varTokenType);
-        
+
         if (peek().type !== "rparen") {
           throw new Error("errors.error_invalid_quantifier_format");
         }
         eat("rparen");
-        
+
         if (peek().type === "comma") {
           throw new Error("errors.error_unexpected_comma");
         }
@@ -189,9 +208,11 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
           peek().type === "rparen" ||
           peek().type === "comma"
         ) {
-          throw new Error(`errors.error_missing_right_side|${getSymbolFromType(symbol)}`);
+          throw new Error(
+            `errors.error_missing_right_side|${getSymbolFromType(symbol)}`,
+          );
         }
-        
+
         enterQuantifierScope(variable);
         const formula = parseNegation();
         exitQuantifierScope();
@@ -228,7 +249,11 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         if (peek().type === "rparen") {
           throw new Error("errors.error_empty_arguments");
         }
-        while (peek().type === "number" || peek().type === "upper_id" || peek().type === "lower_id") {
+        while (
+          peek().type === "number" ||
+          peek().type === "upper_id" ||
+          peek().type === "lower_id"
+        ) {
           args.push(parseTerm(true));
           if (peek().type === "comma") {
             eat("comma");
@@ -247,7 +272,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
           nextType === "implies" ||
           nextType === "not"
         ) {
-          throw new Error(`errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`);
+          throw new Error(
+            `errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`,
+          );
         }
         if (peek().type !== "rparen") {
           throw new Error("errors.error_parentheses");
@@ -271,7 +298,11 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
         if (peek().type === "rparen") {
           throw new Error("errors.error_empty_arguments");
         }
-        while (peek().type === "number" || peek().type === "upper_id" || peek().type === "lower_id") {
+        while (
+          peek().type === "number" ||
+          peek().type === "upper_id" ||
+          peek().type === "lower_id"
+        ) {
           args.push(parseTerm(true));
           if (peek().type === "comma") {
             eat("comma");
@@ -291,7 +322,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
           nextType === "implies" ||
           nextType === "not"
         ) {
-          throw new Error(`errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`);
+          throw new Error(
+            `errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`,
+          );
         }
 
         if (peek().type !== "rparen") {
@@ -308,14 +341,18 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
       currentType === "and" ||
       currentType === "or"
     ) {
-      throw new Error(`errors.error_unexpected_token|${getSymbolFromType(currentType)}`);
+      throw new Error(
+        `errors.error_unexpected_token|${getSymbolFromType(currentType)}`,
+      );
     }
 
     if (currentType === "comma") {
       throw new Error("errors.error_unexpected_comma");
     }
 
-    throw new Error(`errors.error_unexpected_token|${getSymbolFromType(currentType)}`);
+    throw new Error(
+      `errors.error_unexpected_token|${getSymbolFromType(currentType)}`,
+    );
   }
 
   function parseTerm(inPredicateArg = false): ASTNode {
@@ -329,7 +366,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
       type === "implies" ||
       type === "not"
     ) {
-      throw new Error(`errors.error_operator_inside_arguments|${getSymbolFromType(type)}`);
+      throw new Error(
+        `errors.error_operator_inside_arguments|${getSymbolFromType(type)}`,
+      );
     }
 
     if (peek().type === "lower_id") {
@@ -362,7 +401,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
           nextType === "implies" ||
           nextType === "not"
         ) {
-          throw new Error(`errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`);
+          throw new Error(
+            `errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`,
+          );
         }
 
         if (peek().type !== "rparen") {
@@ -407,7 +448,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
           nextType === "implies" ||
           nextType === "not"
         ) {
-          throw new Error(`errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`);
+          throw new Error(
+            `errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`,
+          );
         }
 
         if (peek().type !== "rparen") {
@@ -429,7 +472,11 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
           throw new Error("errors.error_empty_arguments");
         }
         const args: ASTNode[] = [];
-        while (peek().type === "number" || peek().type === "upper_id" || peek().type === "lower_id") {
+        while (
+          peek().type === "number" ||
+          peek().type === "upper_id" ||
+          peek().type === "lower_id"
+        ) {
           args.push(parseTerm(true));
           if (peek().type === "comma") {
             eat("comma");
@@ -448,7 +495,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
           nextType === "implies" ||
           nextType === "not"
         ) {
-          throw new Error(`errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`);
+          throw new Error(
+            `errors.error_operator_inside_arguments|${getSymbolFromType(nextType)}`,
+          );
         }
         if (peek().type !== "rparen") {
           throw new Error("errors.error_parentheses");
@@ -459,7 +508,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
       return { type: "Constant", name: value };
     }
 
-    throw new Error(`errors.error_expected_term|${getSymbolFromType(peek().type)}`);
+    throw new Error(
+      `errors.error_expected_term|${getSymbolFromType(peek().type)}`,
+    );
   }
 
   const ast = parseExpression();
@@ -468,7 +519,9 @@ export function parseStandardFormula(tokens: LogicToken[]): ASTNode {
     if (peek().type === "comma") {
       throw new Error("errors.error_unexpected_comma");
     }
-    throw new Error(`errors.error_unexpected_token|${getSymbolFromType(peek().type)}`);
+    throw new Error(
+      `errors.error_unexpected_token|${getSymbolFromType(peek().type)}`,
+    );
   }
 
   return ast;
@@ -499,6 +552,7 @@ function stringifyRecursive(
   node: ASTNode,
   parentType?: ASTNode["type"],
 ): string {
+  if (node.type === "Cut") return "!";
   switch (node.type) {
     case "BinaryExpression": {
       const ops = { and: "∧", or: "∨", implies: "=>" };

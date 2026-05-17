@@ -28,7 +28,8 @@
     "error_prolog_unexpected_token": "Unexpected token in Prolog: '{value}'",
     "error_prolog_invalid_predicate": "Invalid predicate format.",
     "error_prolog_invalid_term": "Invalid term format.",
-    "error_prolog_missing_query": "Missing query (?-)."
+    "error_prolog_missing_query": "Missing query (?-).",
+    "error_prolog_cut_outside_rule": "Invalid use of cut (!). Cut can only appear in the body of a rule."
   },
   "transformation_steps": "Transformation steps",
   "parsed_formula": "Parsed formula",
@@ -76,6 +77,15 @@
   "export_latex_landscape": "Landscape",
   "export_table_latex": "Generate LaTeX Table",
   "export_tree_latex": "Generate LaTeX Tree",
+  "show_all_branches": "Show branches without cut",
+  "hide_all_branches": "Hide branches without cut",
+  "fullscreen_enter": "Fullscreen",
+  "fullscreen_exit": "Exit Fullscreen",
+  "controls": {
+    "zoom_in": "Zoom In",
+    "zoom_out": "Zoom Out",
+    "fit_view": "Fit View"
+  },
   "latex_export_warning": "WARNING: Make sure you have included these packages in your document preamble (before \\begin{document}):",
   "cancel": "Cancel",
   "copy": "Copy",

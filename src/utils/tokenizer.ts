@@ -8,6 +8,7 @@ export type LogicToken =
   | { type: "lparen" }
   | { type: "rparen" }
   | { type: "comma" }
+  | { type: "cut" } // Prolog cut '!'
   | { type: "lower_id"; value: string }
   | { type: "upper_id"; value: string }
   | { type: "number"; value: string }
@@ -29,6 +30,10 @@ export function logicTokenize(rawInput: string): LogicToken[] {
       continue;
     }
     switch (c) {
+      case "!":
+        tokens.push({ type: "cut" });
+        i++;
+        continue;
       case "∧":
         tokens.push({ type: "and" });
         i++;
@@ -113,9 +118,7 @@ export function logicTokenize(rawInput: string): LogicToken[] {
   tokens.push({ type: "eof" });
   return tokens;
 }
-export function decideLogicType(
-  tokens: LogicToken[],
-): "prolog" | "standard" {
+export function decideLogicType(tokens: LogicToken[]): "prolog" | "standard" {
   let hasProlog = false;
   for (const token of tokens) {
     if (
